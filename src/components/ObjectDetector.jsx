@@ -101,18 +101,20 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               const score = prediction.score.toFixed(3);
 
               // Draw box
-              ctx.strokeStyle = '#00ff00';
-              ctx.lineWidth = 2;
+              ctx.strokeStyle = '#2563eb';
+              ctx.lineWidth = 3;
               ctx.strokeRect(x, y, width, height);
 
-              // Draw label
-              ctx.fillStyle = '#00ff00';
+              // Draw label background
+              ctx.fillStyle = '#2563eb';
+              const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
+              const textWidth = ctx.measureText(text).width;
+              ctx.fillRect(x, y - 24, textWidth + 12, 24);
+              
+              // Draw label text
+              ctx.fillStyle = 'white';
               ctx.font = 'bold 14px Arial';
-              ctx.fillText(
-                `${prediction.class} ${(score * 100).toFixed(0)}%`,
-                x,
-                y - 5
-              );
+              ctx.fillText(text, x + 6, y - 7);
             });
             console.log('Canvas drawn with', predictions.length, 'predictions');
           }

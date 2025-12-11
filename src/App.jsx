@@ -24,9 +24,11 @@ function App() {
   const filterForRemoval = (objects) => {
     // List of objects that should be removed for real estate photos
     const removalList = [
-      'person', 'dog', 'cat', 'toy', 'teddy bear', 'bicycle', 'skateboard',
-      'car', 'motorcycle', 'sports equipment', 'clutter', 'trash', 'shoes',
-      'backpack', 'luggage', 'tools', 'ladder', 'paint brush', 'bucket'
+      'person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
+      'toy', 'teddy bear', 'kite', 'sports ball', 'baseball bat', 'skateboard', 'surfboard', 'tennis racket',
+      'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
+      'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
+      'skis', 'snowboard', 'sports', 'ball', 'baseball', 'glove', 'skateboard'
     ];
 
     return objects
