@@ -84,8 +84,15 @@ function App() {
       // Toys and small items
       'teddy bear', 'kite', 'toy',
       
+      // Bathroom items (toiletries, towels, personal care)
+      'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
+      'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain',
+      'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume',
+      'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine',
+      'bathroom accessories', 'toiletries', 'bath products', 'shower gel',
+      
       // Small personal care items
-      'scissors', 'hair drier', 'toothbrush',
+      'scissors',
       
       // Books and papers
       'book'
