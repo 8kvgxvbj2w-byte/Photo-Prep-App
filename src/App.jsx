@@ -29,42 +29,72 @@ function App() {
   const detectRoomType = (objects) => {
     const classes = objects.map(obj => obj.class.toLowerCase());
     
-    // Count indicators for each room type for better confidence
-    const kitchenIndicators = ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher', 'toaster'];
-    const bathroomIndicators = ['toilet', 'bathtub', 'shower'];
-    const bedroomIndicators = ['bed'];
-    const livingRoomIndicators = ['couch', 'sofa', 'tv'];
-    const diningRoomIndicators = ['dining table'];
+    // Count indicators for each room type with weighted scoring
+    const kitchenIndicators = {
+      strong: ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher'], // 3 points each
+      medium: ['toaster', 'kettle', 'pot', 'pan', 'sink'] // 1 point each
+    };
+    const bathroomIndicators = {
+      strong: ['toilet', 'bathtub', 'shower'], // 5 points each
+      medium: ['towel', 'bathroom accessories'] // 1 point each
+    };
+    const bedroomIndicators = {
+      strong: ['bed'], // 5 points
+      medium: ['pillow', 'blanket', 'nightstand', 'dresser'] // 1 point each
+    };
+    const livingRoomIndicators = {
+      strong: ['couch', 'sofa'], // 3 points each
+      medium: ['tv', 'remote', 'coffee table'] // 1 point each
+    };
+    const diningRoomIndicators = {
+      strong: ['dining table'], // 5 points
+      medium: ['chair'] // 1 point
+    };
     
-    const kitchenScore = classes.filter(c => kitchenIndicators.includes(c)).length;
-    const bathroomScore = classes.filter(c => bathroomIndicators.includes(c)).length;
-    const bedroomScore = classes.filter(c => bedroomIndicators.includes(c)).length;
-    const livingRoomScore = classes.filter(c => livingRoomIndicators.includes(c)).length;
-    const diningRoomScore = classes.filter(c => diningRoomIndicators.includes(c)).length;
+    // Calculate weighted scores
+    let kitchenScore = 0;
+    let bathroomScore = 0;
+    let bedroomScore = 0;
+    let livingRoomScore = 0;
+    let diningRoomScore = 0;
     
-    // Strong bathroom detection (toilet is unique to bathrooms)
-    if (bathroomScore > 0) {
-      return 'bathroom';
-    }
+    classes.forEach(c => {
+      // Kitchen scoring
+      if (kitchenIndicators.strong.includes(c)) kitchenScore += 3;
+      else if (kitchenIndicators.medium.includes(c)) kitchenScore += 1;
+      
+      // Bathroom scoring
+      if (bathroomIndicators.strong.includes(c)) bathroomScore += 5;
+      else if (bathroomIndicators.medium.includes(c)) bathroomScore += 1;
+      
+      // Bedroom scoring
+      if (bedroomIndicators.strong.includes(c)) bedroomScore += 5;
+      else if (bedroomIndicators.medium.includes(c)) bedroomScore += 1;
+      
+      // Living room scoring
+      if (livingRoomIndicators.strong.includes(c)) livingRoomScore += 3;
+      else if (livingRoomIndicators.medium.includes(c)) livingRoomScore += 1;
+      
+      // Dining room scoring
+      if (diningRoomIndicators.strong.includes(c)) diningRoomScore += 5;
+      else if (diningRoomIndicators.medium.includes(c)) diningRoomScore += 1;
+    });
     
-    // Kitchen detection (needs at least 1 strong indicator)
-    if (kitchenScore > 0) {
-      return 'kitchen';
-    }
+    // Find highest scoring room type (minimum score of 2 required)
+    const scores = [
+      { type: 'bathroom', score: bathroomScore },
+      { type: 'kitchen', score: kitchenScore },
+      { type: 'bedroom', score: bedroomScore },
+      { type: 'living room', score: livingRoomScore },
+      { type: 'dining room', score: diningRoomScore }
+    ];
     
-    // Bedroom detection
-    if (bedroomScore > 0) {
-      return 'bedroom';
-    }
+    // Sort by score descending
+    scores.sort((a, b) => b.score - a.score);
     
-    // Living room detection
-    if (livingRoomScore > 0) {
-      return 'living room';
-    }
-    
-    // Dining room detection
-    if (diningRoomScore > 0) {
-      return 'dining room';
+    // Return highest scoring room if it meets minimum threshold
+    if (scores[0].score >= 2) {
+      return scores[0].type;
     }
     
     return 'general';
@@ -119,7 +149,17 @@ function App() {
       'box', 'container', 'basket', 'bag', 'pouch', 'case',
       'picture', 'photo', 'poster', 'artwork', 'frame',
       'candle', 'decoration', 'ornament', 'figurine', 'statue',
-      'flower', 'plant', 'flowers', 'bouquet'
+      'flower', 'plant', 'flowers', 'bouquet',
+      
+      // Additional clutter
+      'wire', 'cable', 'cord', 'charger', 'adapter',
+      'trash', 'garbage', 'waste', 'recycling',
+      'cleaning', 'supplies', 'mop', 'broom', 'vacuum',
+      'tool', 'tools', 'toolbox',
+      'clothing', 'laundry', 'clothes',
+      'rug', 'mat', 'carpet',
+      'sign', 'sticker', 'label',
+      'package', 'packaging', 'wrapping'
     ];
     
     // Items to EXCLUDE (large furniture that should stay)

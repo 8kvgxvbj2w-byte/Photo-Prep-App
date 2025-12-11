@@ -80,11 +80,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               predictions = await model.estimateObjects(img);
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
-              // Optimized to catch more visible items:
-              // - maxNumBoxes: 75 (detect more items)
-              // - scoreThreshold: 0.15 (lower threshold for better coverage)
-              console.log('Using detect API with enhanced detection');
-              predictions = await model.detect(inputCanvas, 75, 0.15);
+              // Optimized to catch maximum visible items:
+              // - maxNumBoxes: 100 (detect many items)
+              // - scoreThreshold: 0.12 (very low threshold for comprehensive detection)
+              console.log('Using detect API with maximum detection');
+              predictions = await model.detect(inputCanvas, 100, 0.12);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
@@ -154,10 +154,13 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             // High priority items that should be very obvious
             const highPriorityItems = [
               'person', 'dog', 'cat', 'bird',
-              'bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug',
-              'towel', 'toothbrush', 'toilet paper',
-              'cell phone', 'laptop', 'remote',
-              'book', 'paper', 'magazine'
+              'bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug', 'pot', 'pan',
+              'towel', 'toothbrush', 'toilet paper', 'tissue',
+              'cell phone', 'laptop', 'remote', 'keyboard', 'mouse',
+              'book', 'paper', 'magazine', 'mail', 'document',
+              'clothes', 'clothing', 'shirt', 'pants', 'jacket', 'shoes',
+              'bag', 'backpack', 'purse', 'handbag',
+              'trash', 'garbage', 'box'
             ];
 
             // Draw boxes ONLY for items that should be removed, prioritizing notable items
