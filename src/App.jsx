@@ -108,10 +108,6 @@ function App() {
       'picture', 'photo', 'poster', 'artwork', 'frame',
       'candle', 'decoration', 'ornament', 'figurine', 'statue',
       'flower', 'plant', 'flowers', 'bouquet'
-
-      
-      // Books and papers
-      'book'
     ];
     
     // Items to EXCLUDE (large furniture that should stay)
