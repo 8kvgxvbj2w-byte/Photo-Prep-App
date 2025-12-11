@@ -18,17 +18,29 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
       try {
         console.log('Image received, loading model...');
-        // Load the model
-        const model = await cocoSsd.load();
-        console.log('Model loaded successfully');
+        console.log('Image data length:', image.length);
+        
+        // Load the model with a timeout
+        const modelPromise = cocoSsd.load();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
+        );
+        
+        const model = await Promise.race([modelPromise, timeoutPromise]);
+        console.log('Model loaded successfully, model object keys:', Object.keys(model));
 
         // Get image dimensions
         const img = imgRef.current;
         if (!img.complete) {
-          console.log('Image not loaded yet, waiting...');
-          img.onload = () => runDetection();
+          console.log('Image not loaded yet, waiting for onload...');
+          img.onload = () => {
+            console.log('Image loaded, dimensions:', img.width, 'x', img.height);
+            runDetection();
+          };
           return;
         }
+        
+        console.log('Image already loaded, dimensions:', img.width, 'x', img.height);
 
         const runDetection = async () => {
           console.log('Running detection on image:', img.width, 'x', img.height);
@@ -37,9 +49,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           try {
             // Try the newer API first
             if (model.estimateObjects) {
+              console.log('Using estimateObjects API');
               predictions = await model.estimateObjects(img);
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
+              console.log('Using detect API');
               predictions = await model.detect(img);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
@@ -49,7 +63,10 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             throw new Error(`Detection method failed: ${methodErr.message}`);
           }
           
-          console.log('Predictions received:', predictions);
+          console.log('Predictions received:', predictions.length, 'objects');
+          predictions.forEach((p, idx) => {
+            console.log(`  ${idx}: ${p.class} (${(p.score * 100).toFixed(1)}%)`);
+          });
 
           // Sort by confidence
           predictions.sort((a, b) => b.score - a.score);
@@ -92,8 +109,8 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
         await runDetection();
       } catch (err) {
-        console.error('Detection error:', err);
-        setError('Failed to detect objects. Please try again.\n' + err.message);
+        console.error('Detection error full:', err);
+        setError('Failed to detect objects:\n' + (err.message || String(err)));
       } finally {
         setIsLoading(false);
       }
