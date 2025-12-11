@@ -37,8 +37,7 @@
   height: auto;
   border-radius: 12px;
   display: block;
-  border: 1px solid #f0f0f0;
-  background: white;
+  background: transparent;
 }
 
 .detection-stats {

@@ -299,22 +299,33 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           )}
           
           {!isLoading && image && (
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ 
+              position: 'relative',
+              width: '100%',
+              display: 'inline-block'
+            }}>
+              <img 
+                src={image} 
+                alt="Detection base"
+                style={{
+                  width: '100%',
+                  display: 'block',
+                  borderRadius: '12px',
+                  border: '1px solid #f0f0f0'
+                }}
+              />
               <canvas 
                 ref={canvasRef} 
                 className="detection-canvas"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  borderRadius: '12px',
+                  maxWidth: '100%',
+                  height: 'auto'
+                }}
               />
-              {canvasRef.current?.width === 0 && (
-                <img 
-                  src={image} 
-                  alt="Detection result"
-                  style={{
-                    width: '100%',
-                    borderRadius: '12px',
-                    border: '1px solid #f0f0f0'
-                  }}
-                />
-              )}
             </div>
           )}
 
