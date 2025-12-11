@@ -196,12 +196,13 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               const score = prediction.score;
               const className = prediction.class.toLowerCase();
               
-              // Skip furniture and very low confidence
+              // Skip furniture only - draw everything else that's detected
               const isFurniture = furnitureToKeep.some(furniture => 
                 className.includes(furniture) || furniture.includes(className)
               );
               
-              if (isFurniture || score < 0.25) {
+              // Draw ALL detected items except furniture, regardless of confidence
+              if (isFurniture) {
                 return;
               }
               
@@ -214,22 +215,22 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 className.includes(item) || item.includes(className)
               );
               
-              // Simplified color coding for better visual clarity
-              let boxColor, labelColor, lineWidth, fillColor;
+              // Color coding: prioritize what should be removed
+              let boxColor, fillColor, lineWidth;
               if (isHighPriority) {
-                boxColor = '#dc2626';
-                labelColor = '#dc2626';
-                fillColor = 'rgba(220, 38, 38, 0.15)';
-                lineWidth = 4;
+                // High priority items - bright red, thick border
+                boxColor = '#ef4444';
+                fillColor = 'rgba(239, 68, 68, 0.25)';
+                lineWidth = 5;
               } else if (isKnownItem) {
-                boxColor = '#2563eb';
-                labelColor = '#2563eb';
-                fillColor = 'rgba(37, 99, 235, 0.1)';
+                // Known removal items - blue
+                boxColor = '#3b82f6';
+                fillColor = 'rgba(59, 130, 246, 0.15)';
                 lineWidth = 3;
               } else {
+                // Unknown items - orange, draw for review
                 boxColor = '#f97316';
-                labelColor = '#f97316';
-                fillColor = 'rgba(249, 115, 22, 0.1)';
+                fillColor = 'rgba(249, 115, 22, 0.15)';
                 lineWidth = 2;
               }
 
@@ -237,22 +238,25 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               ctx.fillStyle = fillColor;
               ctx.fillRect(x, y, width, height);
 
-              // Draw box
+              // Draw box border
               ctx.strokeStyle = boxColor;
               ctx.lineWidth = lineWidth;
               ctx.strokeRect(x, y, width, height);
 
-              // Draw label background
+              // Draw label background with item name
               ctx.fillStyle = boxColor;
               const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
-              ctx.font = 'bold 16px Arial';
+              ctx.font = 'bold 18px Arial';
               const textWidth = ctx.measureText(text).width;
-              const labelHeight = 28;
-              ctx.fillRect(x, y - labelHeight, textWidth + 14, labelHeight);
+              const labelHeight = 32;
+              ctx.fillRect(x, y - labelHeight, textWidth + 16, labelHeight);
               
               // Draw label text
               ctx.fillStyle = 'white';
-              ctx.fillText(text, x + 7, y - 8);
+              ctx.font = 'bold 18px Arial';
+              ctx.fillText(text, x + 8, y - 9);
+              
+              console.log(`Drawing box for ${className} (${score.toFixed(2)}) at [${x.toFixed(0)}, ${y.toFixed(0)}]`);
             });
             console.log('Canvas drawn with', predictions.length, 'predictions at full resolution');
           }
