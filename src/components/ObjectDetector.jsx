@@ -100,42 +100,53 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             // Draw image
             ctx.drawImage(img, 0, 0);
 
+            // Common removal items list for canvas highlighting
+            const easyToRemoveItems = [
+              'person', 'dog', 'cat', 'bird',
+              'backpack', 'handbag', 'suitcase', 'umbrella', 'tie', 'bag', 'purse', 'wallet', 'jacket', 'coat', 'sweater', 'shirt', 'pants', 'shoes',
+              'cell phone', 'remote', 'laptop', 'keyboard', 'mouse', 'monitor', 'phone', 'tablet', 'ipad', 'computer', 'headphones', 'speaker', 'camera',
+              'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'pot', 'pan',
+              'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware', 'dinnerware',
+              'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter', 'pitcher', 'kettle',
+              'container', 'jar', 'lid', 'cap', 'sauce', 'condiment', 'spice', 'seasoning',
+              'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+              'food', 'fruit', 'vegetable', 'meat', 'bread', 'cheese', 'milk', 'drink',
+              'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
+              'bicycle', 'bike', 'weights', 'dumbbell', 'yoga mat', 'exercise ball',
+              'teddy bear', 'kite', 'toy', 'doll', 'game', 'puzzle', 'lego',
+              'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
+              'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain', 'bathroom mat',
+              'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume', 'cologne',
+              'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine', 'vitamins',
+              'bathroom accessories', 'toiletries', 'bath products', 'shower gel', 'body wash', 'moisturizer',
+              'pillow', 'blanket', 'sheet', 'comforter', 'bedspread', 'duvet', 'mattress', 'pillow case',
+              'nightstand', 'dresser', 'closet', 'wardrobe', 'hanger', 'shoe rack',
+              'cushion', 'throw pillow', 'throw blanket', 'couch throw', 'ottoman', 'footstool',
+              'scissors', 'pen', 'pencil', 'paper', 'document', 'mail', 'magazine',
+              'book', 'notebook', 'clipboard', 'folder', 'binder',
+              'box', 'container', 'basket', 'bag', 'pouch', 'case',
+              'picture', 'photo', 'poster', 'artwork', 'frame',
+              'candle', 'decoration', 'ornament', 'figurine', 'statue',
+              'flower', 'plant', 'flowers', 'bouquet'
+            ];
+
             // Draw boxes
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
               const score = prediction.score.toFixed(3);
               
               // Check if it's a known removal item
-              const easyToRemoveItems = [
-                'person', 'dog', 'cat', 'bird',
-                'backpack', 'handbag', 'suitcase', 'umbrella', 'tie',
-                'cell phone', 'remote', 'laptop', 'keyboard', 'mouse',
-                'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
-                'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware',
-                'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter',
-                'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-                'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
-                'teddy bear', 'kite', 'toy',
-                'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
-                'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain',
-                'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume',
-                'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine',
-                'bathroom accessories', 'toiletries', 'bath products', 'shower gel',
-                'scissors', 'book'
-              ];
-              
               const isKnownItem = easyToRemoveItems.some(item => 
                 prediction.class.toLowerCase().includes(item) || item.includes(prediction.class.toLowerCase())
               );
               
               // Use different colors for identified vs unidentified clutter
-              const isIdentified = isKnownItem;
-              const boxColor = isIdentified ? '#2563eb' : '#ef4444';  // Blue for identified, red for unidentified
-              const labelColor = isIdentified ? '#2563eb' : '#ef4444';
+              const boxColor = isKnownItem ? '#2563eb' : '#ef4444';  // Blue for identified, red for unidentified
+              const labelColor = isKnownItem ? '#2563eb' : '#ef4444';
 
               // Draw box with thicker line for unidentified items
               ctx.strokeStyle = boxColor;
-              ctx.lineWidth = isIdentified ? 3 : 4;
+              ctx.lineWidth = isKnownItem ? 3 : 4;
               ctx.strokeRect(x, y, width, height);
 
               // Draw label background
