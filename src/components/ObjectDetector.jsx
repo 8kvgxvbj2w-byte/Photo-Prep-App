@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import './ObjectDetector.css';
 
+let modelCache = null; // Cache the model globally
+
 function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const imgRef = React.useRef(null);
-  const canvasRef = React.useRef(null);
+  const imgRef = useRef(null);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!image) return;
@@ -20,14 +22,22 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         console.log('Image received, loading model...');
         console.log('Image data length:', image.length);
         
-        // Load the model with a timeout
-        const modelPromise = cocoSsd.load();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
-        );
-        
-        const model = await Promise.race([modelPromise, timeoutPromise]);
-        console.log('Model loaded successfully, model object keys:', Object.keys(model));
+        // Load or use cached model
+        let model;
+        if (modelCache) {
+          console.log('Using cached model');
+          model = modelCache;
+        } else {
+          console.log('Loading new model...');
+          const modelPromise = cocoSsd.load();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
+          );
+          
+          model = await Promise.race([modelPromise, timeoutPromise]);
+          modelCache = model; // Cache for future use
+          console.log('Model loaded and cached successfully');
+        }
 
         // Get image dimensions
         const img = imgRef.current;
@@ -35,14 +45,15 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           console.log('Image not loaded yet, waiting for onload...');
           img.onload = () => {
             console.log('Image loaded, dimensions:', img.width, 'x', img.height);
-            runDetection();
+            runDetection(model);
           };
           return;
         }
         
         console.log('Image already loaded, dimensions:', img.width, 'x', img.height);
+        await runDetection(model);
 
-        const runDetection = async () => {
+        async function runDetection(model) {
           console.log('Running detection on image:', img.width, 'x', img.height);
           // Run detection - use detect() instead of estimateObjects()
           let predictions;
@@ -105,9 +116,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             });
             console.log('Canvas drawn with', predictions.length, 'predictions');
           }
-        };
-
-        await runDetection();
+        }
       } catch (err) {
         console.error('Detection error full:', err);
         setError('Failed to detect objects:\n' + (err.message || String(err)));
