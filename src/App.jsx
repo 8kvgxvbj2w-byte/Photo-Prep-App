@@ -162,11 +162,10 @@ function App() {
       'package', 'packaging', 'wrapping'
     ];
     
-    // Items to EXCLUDE (large furniture that should stay)
+    // Items to EXCLUDE (only major fixed furniture/appliances that should stay)
     const furnitureToKeep = [
-      'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
-      'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
-      'floor', 'curtain', 'lamp', 'light', 'table'
+      'couch', 'sofa', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
+      'microwave', 'wall', 'door', 'window', 'ceiling', 'floor'
     ];
 
     // Categorize unidentified objects by room and position

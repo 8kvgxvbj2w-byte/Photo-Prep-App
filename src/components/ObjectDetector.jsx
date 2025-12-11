@@ -144,11 +144,10 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'flower', 'plant', 'flowers', 'bouquet'
             ];
 
-            // Furniture to exclude from highlighting
+            // Only exclude major structural/fixed items from highlighting
             const furnitureToKeep = [
-              'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
-              'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
-              'floor', 'curtain', 'lamp', 'light', 'table'
+              'couch', 'sofa', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
+              'microwave', 'wall', 'door', 'window', 'ceiling', 'floor'
             ];
             
             // High priority items that should be very obvious
@@ -163,19 +162,19 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'trash', 'garbage', 'box'
             ];
 
-            // Draw boxes ONLY for items that should be removed, prioritizing notable items
+            // Draw boxes for ALL items that need attention, with clear visual hierarchy
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
               const score = prediction.score.toFixed(3);
               const className = prediction.class.toLowerCase();
               
-              // Skip furniture items completely
+              // Skip only major fixed furniture/appliances
               const isFurniture = furnitureToKeep.some(furniture => 
                 className.includes(furniture) || furniture.includes(className)
               );
               
               if (isFurniture) {
-                return; // Don't draw boxes for furniture
+                return; // Don't draw boxes for fixed items
               }
               
               // Check if it's a known removal item
@@ -188,21 +187,28 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 className.includes(item) || item.includes(className)
               );
               
-              // Color coding: High priority = bright red, Known = blue, Unknown = orange
-              let boxColor, labelColor, lineWidth;
+              // Enhanced color coding with semi-transparent fill to show attention areas
+              let boxColor, labelColor, lineWidth, fillColor;
               if (isHighPriority) {
                 boxColor = '#dc2626'; // Bright red for high priority
                 labelColor = '#dc2626';
+                fillColor = 'rgba(220, 38, 38, 0.15)'; // Red tint
                 lineWidth = 4; // Thicker line
               } else if (isKnownItem) {
                 boxColor = '#2563eb'; // Blue for known items
                 labelColor = '#2563eb';
+                fillColor = 'rgba(37, 99, 235, 0.1)'; // Blue tint
                 lineWidth = 3;
               } else {
                 boxColor = '#f97316'; // Orange for unknown clutter
                 labelColor = '#f97316';
+                fillColor = 'rgba(249, 115, 22, 0.12)'; // Orange tint
                 lineWidth = 3;
               }
+
+              // Draw semi-transparent fill to highlight area
+              ctx.fillStyle = fillColor;
+              ctx.fillRect(x, y, width, height);
 
               // Draw box
               ctx.strokeStyle = boxColor;
