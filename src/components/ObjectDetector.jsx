@@ -30,7 +30,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         } else {
           console.log('Loading new model...');
           const modelPromise = cocoSsd.load({
-            base: 'mobilenet_v2' // Balance of accuracy and speed
+            base: 'lite_mobilenet_v2' // Faster inference for quick analysis
           });
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
@@ -56,7 +56,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         await runDetection(model);
 
         async function runDetection(model) {
-          const MAX_DIMENSION = 1280; // downscale large images to avoid canvas/GPU glitches
+          const MAX_DIMENSION = 640; // smaller size for faster processing
           const scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
           const targetWidth = Math.round(img.width * scale);
           const targetHeight = Math.round(img.height * scale);
@@ -67,23 +67,8 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           inputCanvas.height = targetHeight;
           const inputCtx = inputCanvas.getContext('2d');
           
-          // Enhance image for better distant object detection
+          // Draw image directly without enhancement for speed
           inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          const imageData = inputCtx.getImageData(0, 0, targetWidth, targetHeight);
-          const data = imageData.data;
-          
-          // Apply contrast and brightness enhancement
-          const contrast = 1.2; // 20% more contrast
-          const brightness = 10; // slight brightness boost
-          
-          for (let i = 0; i < data.length; i += 4) {
-            // Enhance RGB channels
-            data[i] = Math.min(255, Math.max(0, contrast * (data[i] - 128) + 128 + brightness));
-            data[i + 1] = Math.min(255, Math.max(0, contrast * (data[i + 1] - 128) + 128 + brightness));
-            data[i + 2] = Math.min(255, Math.max(0, contrast * (data[i + 2] - 128) + 128 + brightness));
-          }
-          
-          inputCtx.putImageData(imageData, 0, 0);
 
           console.log('Running detection on image (scaled):', targetWidth, 'x', targetHeight, 'scale', scale.toFixed(3));
           // Run detection with optimized parameters for distant objects
@@ -95,11 +80,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               predictions = await model.estimateObjects(img);
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
-              // Optimized for detecting smaller/distant objects:
-              // - maxNumBoxes: 150 (detect even more objects)
-              // - scoreThreshold: 0.1 (very low threshold for maximum distant detection)
-              console.log('Using detect API with enhanced distant object detection');
-              predictions = await model.detect(inputCanvas, 150, 0.1);
+              // Optimized for speed:
+              // - maxNumBoxes: 50 (balanced detection count)
+              // - scoreThreshold: 0.2 (balanced threshold for speed)
+              console.log('Using detect API with fast detection');
+              predictions = await model.detect(inputCanvas, 50, 0.2);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
