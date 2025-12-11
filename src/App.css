@@ -10,7 +10,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f8f9fa;
   min-height: 100vh;
 }
 
@@ -22,29 +22,34 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f8f9fa;
 }
 
 .app-header {
-  background: rgba(0, 0, 0, 0.2);
-  color: white;
-  padding: 2rem;
+  background: white;
+  color: #1a1a1a;
+  padding: 1.5rem 2rem;
   text-align: center;
-  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .app-header p {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 0.95rem;
+  opacity: 0.6;
+  font-weight: 400;
 }
 
 .app-main {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -53,7 +58,7 @@ body {
 .layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
   grid-template-areas:
     "camera detection"
     "camera results";
@@ -78,5 +83,13 @@ body {
       "camera"
       "detection"
       "results";
+  }
+  
+  .app-main {
+    padding: 1rem;
+  }
+  
+  .app-header h1 {
+    font-size: 1.5rem;
   }
 }
