@@ -428,83 +428,83 @@ function App() {
     // Show room-specific tips even without detecting specific appliances/furniture
     if (roomType === 'kitchen') {
       generalRecommendations.push({
-        name: '✨ Kitchen Staging Tips',
+        name: 'Kitchen Staging Tips',
         confidence: '100',
         location: 'Kitchen',
         type: 'styling',
         tips: [
-          '🧹 Clear ALL countertops - show maximum space',
-          '🚫 Remove magnets and papers from fridge',
-          '🧽 Hide dish soap, sponges, cleaning supplies',
-          '☕ Put away small appliances',
-          '🍋 Stage with ONE bowl of fruit or flowers',
-          '✨ Close all cabinet doors',
-          '💡 Turn on under-cabinet lighting'
+          'Clear ALL countertops - show maximum space',
+          'Remove magnets and papers from fridge',
+          'Hide dish soap, sponges, cleaning supplies',
+          'Put away small appliances',
+          'Stage with ONE bowl of fruit or flowers',
+          'Close all cabinet doors',
+          'Turn on under-cabinet lighting'
         ]
       });
     } else if (roomType === 'bathroom') {
       generalRecommendations.push({
-        name: '✨ Bathroom Staging Tips',
+        name: 'Bathroom Staging Tips',
         confidence: '100',
         location: 'Bathroom',
         type: 'styling',
         tips: [
-          '🚫 Remove ALL toiletries from surfaces',
-          '🪥 Hide toothbrushes, soap, bottles',
-          '🧖 Stage with 2-3 white fluffy towels only',
-          '🚽 Close toilet lid',
-          '🚿 Close shower curtain neatly',
-          '🌿 Add ONE small plant or candle',
-          '✨ Polish mirrors until spotless',
-          '💡 Turn on all lights for spa feel'
+          'Remove ALL toiletries from surfaces',
+          'Hide toothbrushes, soap, bottles',
+          'Stage with 2-3 white fluffy towels only',
+          'Close toilet lid',
+          'Close shower curtain neatly',
+          'Add ONE small plant or candle',
+          'Polish mirrors until spotless',
+          'Turn on all lights for spa feel'
         ]
       });
     } else if (roomType === 'bedroom') {
       generalRecommendations.push({
-        name: '✨ Bedroom Staging Tips',
+        name: 'Bedroom Staging Tips',
         confidence: '100',
         location: 'Bedroom',
         type: 'styling',
         tips: [
-          '🛏️ Make bed with crisp, neutral linens',
-          '🚫 Clear nightstands completely',
-          '🔢 Limit to 4-6 decorative pillows max',
-          '👕 Hide ALL clothes and shoes',
-          '🚪 Close closet doors',
-          '💡 Add matching bedside lamps',
-          '✨ Keep floor completely clear'
+          'Make bed with crisp, neutral linens',
+          'Clear nightstands completely',
+          'Limit to 4-6 decorative pillows max',
+          'Hide ALL clothes and shoes',
+          'Close closet doors',
+          'Add matching bedside lamps',
+          'Keep floor completely clear'
         ]
       });
     } else if (roomType === 'living room') {
       generalRecommendations.push({
-        name: '✨ Living Room Staging Tips',
+        name: 'Living Room Staging Tips',
         confidence: '100',
         location: 'Living room',
         type: 'styling',
         tips: [
-          '📱 Hide remotes, cables, electronics',
-          '🛋️ Limit throw pillows to 3-4',
-          '☕ Clear coffee table except 1-2 items',
-          '📺 Remove personal photos',
-          '🌺 Add fresh flowers or greenery',
-          '💡 Use multiple light sources',
-          '✨ Show flow and walking space'
+          'Hide remotes, cables, electronics',
+          'Limit throw pillows to 3-4',
+          'Clear coffee table except 1-2 items',
+          'Remove personal photos',
+          'Add fresh flowers or greenery',
+          'Use multiple light sources',
+          'Show flow and walking space'
         ]
       });
     } else {
       // Generic tips for unidentified rooms
       generalRecommendations.push({
-        name: '✨ General Staging Tips',
+        name: 'General Staging Tips',
         confidence: '100',
         location: 'Any room',
         type: 'styling',
         tips: [
-          '🚫 Remove ALL personal items and clutter',
-          '🧹 Clear surfaces - less is more',
-          '💡 Maximize natural and artificial light',
-          '🌿 Add minimal, neutral decor',
-          '✨ Create sense of space and flow',
-          '📸 Shoot from corners to show room size'
+          'Remove ALL personal items and clutter',
+          'Clear surfaces - less is more',
+          'Maximize natural and artificial light',
+          'Add minimal, neutral decor',
+          'Create sense of space and flow',
+          'Shoot from corners to show room size'
         ]
       });
     }

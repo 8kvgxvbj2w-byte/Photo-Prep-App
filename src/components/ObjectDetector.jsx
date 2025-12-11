@@ -225,8 +225,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
               // Draw label background
               ctx.fillStyle = labelColor;
-              const priorityMarker = isHighPriority ? '⚠️ ' : '';
-              const text = `${priorityMarker}${prediction.class} ${(score * 100).toFixed(0)}%`;
+              const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
               const textWidth = ctx.measureText(text).width;
               ctx.fillRect(x, y - 24, textWidth + 12, 24);
               
@@ -253,7 +252,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
   return (
     <div className="object-detector">
       <div className="detector-card">
-        <h2>🔍 Object Detection</h2>
+        <h2>Object Detection</h2>
         
         <div className="detector-content">
           <img 
@@ -284,7 +283,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             </div>
           )}
           
-          {!isLoading && detectedObjects.length > 0 && (
+          {!isLoading && image && (
             <canvas 
               ref={canvasRef} 
               className="detection-canvas"
@@ -293,11 +292,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
           {!isLoading && detectedObjects.length > 0 && (
             <div className="detection-stats">
-              <p>Detected {detectedObjects.length} object(s)</p>
+              <p>Detected {detectedObjects.length} objects</p>
             </div>
           )}
           
-          {!isLoading && detectedObjects.length === 0 && !error && (
+          {!isLoading && detectedObjects.length === 0 && !error && image && (
             <div style={{
               padding: '20px',
               textAlign: 'center',
@@ -305,7 +304,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               backgroundColor: '#f5f5f5',
               borderRadius: '4px'
             }}>
-              <p>No objects detected in this image</p>
+              <p>No objects detected</p>
             </div>
           )}
         </div>
