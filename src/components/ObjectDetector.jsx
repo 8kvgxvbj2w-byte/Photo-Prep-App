@@ -80,11 +80,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               predictions = await model.estimateObjects(img);
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
-              // Optimized for speed:
-              // - maxNumBoxes: 50 (balanced detection count)
-              // - scoreThreshold: 0.2 (balanced threshold for speed)
-              console.log('Using detect API with fast detection');
-              predictions = await model.detect(inputCanvas, 50, 0.2);
+              // Optimized to catch more visible items:
+              // - maxNumBoxes: 75 (detect more items)
+              // - scoreThreshold: 0.15 (lower threshold for better coverage)
+              console.log('Using detect API with enhanced detection');
+              predictions = await model.detect(inputCanvas, 75, 0.15);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
@@ -150,8 +150,17 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
               'floor', 'curtain', 'lamp', 'light', 'table'
             ];
+            
+            // High priority items that should be very obvious
+            const highPriorityItems = [
+              'person', 'dog', 'cat', 'bird',
+              'bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug',
+              'towel', 'toothbrush', 'toilet paper',
+              'cell phone', 'laptop', 'remote',
+              'book', 'paper', 'magazine'
+            ];
 
-            // Draw boxes ONLY for items that should be removed
+            // Draw boxes ONLY for items that should be removed, prioritizing notable items
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
               const score = prediction.score.toFixed(3);
@@ -171,18 +180,36 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 className.includes(item) || item.includes(className)
               );
               
-              // All non-furniture items get highlighted (known = blue, unknown = red)
-              const boxColor = isKnownItem ? '#2563eb' : '#ef4444';
-              const labelColor = isKnownItem ? '#2563eb' : '#ef4444';
+              // Check if it's a high priority item
+              const isHighPriority = highPriorityItems.some(item => 
+                className.includes(item) || item.includes(className)
+              );
+              
+              // Color coding: High priority = bright red, Known = blue, Unknown = orange
+              let boxColor, labelColor, lineWidth;
+              if (isHighPriority) {
+                boxColor = '#dc2626'; // Bright red for high priority
+                labelColor = '#dc2626';
+                lineWidth = 4; // Thicker line
+              } else if (isKnownItem) {
+                boxColor = '#2563eb'; // Blue for known items
+                labelColor = '#2563eb';
+                lineWidth = 3;
+              } else {
+                boxColor = '#f97316'; // Orange for unknown clutter
+                labelColor = '#f97316';
+                lineWidth = 3;
+              }
 
               // Draw box
               ctx.strokeStyle = boxColor;
-              ctx.lineWidth = 3;
+              ctx.lineWidth = lineWidth;
               ctx.strokeRect(x, y, width, height);
 
               // Draw label background
               ctx.fillStyle = labelColor;
-              const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
+              const priorityMarker = isHighPriority ? '⚠️ ' : '';
+              const text = `${priorityMarker}${prediction.class} ${(score * 100).toFixed(0)}%`;
               const textWidth = ctx.measureText(text).width;
               ctx.fillRect(x, y - 24, textWidth + 12, 24);
               
