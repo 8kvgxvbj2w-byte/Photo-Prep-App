@@ -70,8 +70,10 @@ function App() {
       // Electronics & devices (small, movable)
       'cell phone', 'remote', 'laptop', 'keyboard', 'mouse',
       
-      // Kitchen clutter (on counters/tables)
+      // Kitchen clutter (on counters/tables) - dishes, cutlery, cups
       'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+      'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware',
+      'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter',
       
       // Food items (should not be visible)
       'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
