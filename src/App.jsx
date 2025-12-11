@@ -104,56 +104,100 @@ function App() {
     // ONLY easily movable clutter - exclude large furniture
     const easyToRemoveItems = [
       // People and pets (always remove)
-      'person', 'dog', 'cat', 'bird',
+      'person', 'people', 'human', 'man', 'woman', 'child', 'kid', 'baby',
+      'dog', 'cat', 'bird', 'pet', 'animal',
       
       // Personal belongings & clutter
       'backpack', 'handbag', 'suitcase', 'umbrella', 'tie', 'bag', 'purse', 'wallet', 'jacket', 'coat', 'sweater', 'shirt', 'pants', 'shoes',
+      'briefcase', 'luggage', 'duffel bag', 'tote bag', 'shoulder bag', 'crossbody bag', 'messenger bag',
+      'scarf', 'hat', 'cap', 'beanie', 'gloves', 'socks', 'underwear',
+      'vest', 'hoodie', 'sweatshirt', 'cardigan', 'blazer', 'dress', 'skirt', 'shorts', 'jeans',
+      'sneakers', 'boot', 'sandal', 'slipper', 'heel', 'loafer', 'flip flop',
       
       // Electronics & devices (small, movable)
-      'cell phone', 'remote', 'laptop', 'keyboard', 'mouse', 'monitor', 'phone', 'tablet', 'ipad', 'computer', 'headphones', 'speaker', 'camera',
+      'cell phone', 'mobile phone', 'smartphone', 'iphone', 'android', 'remote', 'laptop', 'notebook',
+      'keyboard', 'mouse', 'monitor', 'display', 'screen', 'phone', 'tablet', 'ipad', 'computer', 
+      'desktop', 'workstation', 'headphones', 'earbuds', 'speaker', 'bluetooth speaker', 'camera',
+      'webcam', 'printer', 'scanner', 'router', 'modem', 'charger', 'power bank', 'cable',
+      'cord', 'wire', 'extension cord', 'power cord', 'adapter', 'hub', 'dock',
       
-      // Kitchen clutter (on counters/tables) - dishes, cutlery, cups
+      // Kitchen clutter (on counters/tables) - dishes, cutlery, cups, cookware
       'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'pot', 'pan',
-      'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware', 'dinnerware',
-      'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter', 'pitcher', 'kettle',
-      'container', 'jar', 'lid', 'cap', 'sauce', 'condiment', 'spice', 'seasoning',
+      'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware', 'dinnerware', 'flatware',
+      'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter', 'pitcher', 'kettle', 'teapot',
+      'container', 'tupperware', 'jar', 'lid', 'cap', 'sauce', 'condiment', 'spice', 'seasoning',
+      'baking tray', 'cookie sheet', 'cake pan', 'baking pan', 'mixing bowl', 'colander', 'strainer',
+      'cutting board', 'knife block', 'spatula', 'wooden spoon', 'ladle', 'whisk', 'grater',
+      'can opener', 'bottle opener', 'corkscrew', 'measuring cup', 'measuring spoon',
       
       // Food items (should not be visible)
       'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
-      'food', 'fruit', 'vegetable', 'meat', 'bread', 'cheese', 'milk', 'drink',
+      'food', 'fruit', 'vegetable', 'meat', 'bread', 'cheese', 'milk', 'drink', 'juice', 'soda',
+      'coffee', 'tea', 'beer', 'wine', 'alcohol', 'snack', 'chip', 'cookie', 'candy', 'chocolate',
       
       // Sports equipment (easily movable)
       'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
-      'bicycle', 'bike', 'weights', 'dumbbell', 'yoga mat', 'exercise ball',
+      'bicycle', 'bike', 'tricycle', 'scooter', 'roller skate', 'skateboard',
+      'weights', 'dumbbell', 'barbell', 'kettlebell', 'yoga mat', 'exercise ball', 'foam roller',
+      'resistance band', 'jump rope', 'boxing glove', 'baseball glove', 'football', 'soccer ball',
+      'basketball', 'tennis ball', 'golf ball', 'bowling ball', 'ping pong', 'shuttlecock',
       
       // Toys and small items
-      'teddy bear', 'kite', 'toy', 'doll', 'game', 'puzzle', 'lego',
+      'teddy bear', 'kite', 'toy', 'doll', 'game', 'puzzle', 'lego', 'action figure',
+      'toy train', 'toy car', 'toy plane', 'toy block', 'bouncy ball', 'toy animal',
       
       // Bathroom items (toiletries, towels, personal care)
-      'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
-      'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain', 'bathroom mat',
-      'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume', 'cologne',
-      'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine', 'vitamins',
+      'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics', 'makeup',
+      'towel', 'bath towel', 'hand towel', 'washcloth', 'face washer', 'bath mat', 'shower curtain', 'bathroom mat', 'rug',
+      'hair drier', 'hair dryer', 'blow dryer', 'brush', 'comb', 'hair brush', 'paddle brush',
+      'razor', 'safety razor', 'perfume', 'cologne', 'deodorant', 'antiperspirant',
+      'tissue', 'tissue box', 'cotton', 'cotton ball', 'cotton pad', 'q-tip', 'qtip',
+      'makeup', 'lipstick', 'foundation', 'concealer', 'eyeshadow', 'eyeliner', 'mascara',
       'bathroom accessories', 'toiletries', 'bath products', 'shower gel', 'body wash', 'moisturizer',
+      'soap dispenser', 'lotion pump', 'toothbrush holder', 'bathroom caddy', 'shower caddy',
       
       // Bedroom items
-      'pillow', 'blanket', 'sheet', 'comforter', 'bedspread', 'duvet', 'mattress', 'pillow case',
-      'nightstand', 'dresser', 'closet', 'wardrobe', 'hanger', 'shoe rack',
+      'pillow', 'blanket', 'sheet', 'comforter', 'bedspread', 'duvet', 'mattress', 'pillow case', 'pillowcase',
+      'nightstand', 'dresser', 'chest', 'closet', 'wardrobe', 'hanger', 'coat hanger', 'shoe rack',
+      'bed frame', 'headboard', 'footboard', 'bed skirt',
       
-      // Living room items
-      'cushion', 'throw pillow', 'throw blanket', 'couch throw', 'ottoman', 'footstool',
+      // Living room items & furniture
+      'cushion', 'throw pillow', 'throw blanket', 'couch throw', 'ottoman', 'footstool', 'pouf',
+      'side table', 'end table', 'coffee table', 'armchair', 'recliner', 'accent chair',
       
-      // Obvious clutter and mess (always remove)
-      'scissors', 'pen', 'pencil', 'paper', 'document', 'mail', 'magazine',
-      'notebook', 'clipboard', 'folder', 'binder',
-      'box', 'container', 'bag', 'pouch', 'case',
-      'wire', 'cable', 'cord', 'charger', 'adapter',
-      'trash', 'garbage', 'waste', 'recycling',
-      'cleaning', 'supplies', 'mop', 'broom', 'vacuum',
-      'tool', 'tools', 'toolbox',
-      'clothing', 'laundry', 'clothes',
-      'sign', 'sticker', 'label',
-      'package', 'packaging', 'wrapping'
+      // Office/Desk items
+      'scissors', 'pen', 'pencil', 'marker', 'crayon', 'colored pencil',
+      'paper', 'document', 'mail', 'magazine', 'newspaper', 'journal', 'notepad',
+      'notebook', 'clipboard', 'folder', 'binder', 'stapler', 'tape', 'glue',
+      'desk lamp', 'desk organizer', 'pen holder', 'pencil holder', 'sticky note', 'post-it',
+      
+      // Storage & organization
+      'box', 'container', 'basket', 'bag', 'pouch', 'case', 'storage box', 'plastic bin',
+      'drawer organizer', 'shelf organizer', 'closet organizer', 'under bed storage',
+      
+      // Wall decor & art
+      'picture', 'photo', 'poster', 'artwork', 'frame', 'framed art', 'wall art', 'wall decor',
+      'mirror', 'wall mirror', 'floor mirror', 'decorative mirror',
+      
+      // Decorative items
+      'candle', 'decoration', 'ornament', 'figurine', 'statue', 'sculpture',
+      'flower', 'plant', 'flowers', 'bouquet', 'vase', 'flower vase', 'potted plant',
+      'book', 'bookcase', 'bookshelf', 'book rack', 'books',
+      'rug', 'mat', 'carpet', 'area rug', 'runner rug', 'door mat',
+      'lamp', 'table lamp', 'floor lamp', 'accent lamp', 'string light', 'fairy light',
+      
+      // Cleaning & supplies
+      'trash', 'garbage', 'waste', 'recycling', 'trash can', 'garbage can', 'recycling bin',
+      'cleaning', 'supplies', 'mop', 'broom', 'vacuum', 'duster', 'sponge', 'brush',
+      'cleaner', 'bleach', 'disinfectant', 'wipes', 'paper towel', 'towel dispenser',
+      'tool', 'tools', 'toolbox', 'hammer', 'screwdriver', 'wrench', 'pliers', 'drill',
+      'paint', 'paintbrush', 'paint roller', 'paint can',
+      
+      // Miscellaneous clutter
+      'clothing', 'laundry', 'clothes', 'clothes hanger', 'clothesline',
+      'sign', 'sticker', 'label', 'poster', 'flyer',
+      'package', 'packaging', 'wrapping', 'cardboard', 'packing material',
+      'decoration', 'garland', 'wreath', 'banner', 'bunting'
     ];
     
     // Home decor items (can stay if minimal and styled)

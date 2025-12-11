@@ -30,10 +30,10 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         } else {
           console.log('Loading new model...');
           const modelPromise = cocoSsd.load({
-            base: 'lite_mobilenet_v2' // Faster inference for quick analysis
+            base: 'mobilenet_v2' // Higher accuracy model for better object recognition
           });
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
+            setTimeout(() => reject(new Error('Model loading timeout after 60 seconds')), 60000)
           );
           
           model = await Promise.race([modelPromise, timeoutPromise]);
@@ -56,7 +56,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         await runDetection(model);
 
         async function runDetection(model) {
-          const MAX_DIMENSION = 640; // smaller size for faster processing
+          const MAX_DIMENSION = 1024; // Increased for better detail capture
           const scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
           const targetWidth = Math.round(img.width * scale);
           const targetHeight = Math.round(img.height * scale);
@@ -67,24 +67,55 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           inputCanvas.height = targetHeight;
           const inputCtx = inputCanvas.getContext('2d');
           
-          // Draw image directly without enhancement for speed
+          // Draw and enhance image for better recognition
           inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          enhanceImageContrast(inputCtx, targetWidth, targetHeight);
 
           console.log('Running detection on image (scaled):', targetWidth, 'x', targetHeight, 'scale', scale.toFixed(3));
-          // Run detection with optimized parameters for distant objects
-          let predictions;
+          
+          // Run detection with ENHANCED parameters for better accuracy
+          let predictions = [];
           try {
-            // Try the newer API first
-            if (model.estimateObjects) {
+            if (model.detect) {
+              console.log('Running multi-scale detection for comprehensive object recognition');
+              // Original scale
+              const pred1 = await model.detect(inputCanvas, 200, 0.08);
+              predictions = predictions.concat(pred1);
+              
+              // 1.3x scale (upsampled) - catches larger objects with more detail
+              if (targetWidth * 1.3 < 1600) { // Don't exceed browser limits
+                const upscaleCanvas = document.createElement('canvas');
+                upscaleCanvas.width = Math.round(targetWidth * 1.3);
+                upscaleCanvas.height = Math.round(targetHeight * 1.3);
+                const upscaleCtx = upscaleCanvas.getContext('2d');
+                upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
+                const pred2 = await model.detect(upscaleCanvas, 150, 0.08);
+                // Scale bounding boxes back down
+                pred2.forEach(p => {
+                  p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
+                });
+                predictions = predictions.concat(pred2);
+              }
+              
+              // 0.8x scale (downsampled) - catches small objects at distance
+              const downscaleCanvas = document.createElement('canvas');
+              downscaleCanvas.width = Math.round(targetWidth * 0.8);
+              downscaleCanvas.height = Math.round(targetHeight * 0.8);
+              const downscaleCtx = downscaleCanvas.getContext('2d');
+              downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
+              const pred3 = await model.detect(downscaleCanvas, 150, 0.08);
+              // Scale bounding boxes back up
+              pred3.forEach(p => {
+                p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
+              });
+              predictions = predictions.concat(pred3);
+              
+              // Merge duplicate detections from multiple scales
+              predictions = mergeDuplicateDetections(predictions);
+              console.log('After multi-scale merge:', predictions.length, 'unique objects');
+            } else if (model.estimateObjects) {
               console.log('Using estimateObjects API');
               predictions = await model.estimateObjects(img);
-            } else if (model.detect) {
-              // Fallback to detect() which is the standard COCO-SSD API
-              // Optimized to catch maximum visible items:
-              // - maxNumBoxes: 100 (detect many items)
-              // - scoreThreshold: 0.12 (very low threshold for comprehensive detection)
-              console.log('Using detect API with maximum detection');
-              predictions = await model.detect(inputCanvas, 100, 0.12);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
@@ -303,6 +334,95 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
       </div>
     </div>
   );
+}
+
+// Helper function: Enhance image contrast for better object detection
+function enhanceImageContrast(ctx, width, height) {
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  
+  // Histogram equalization: Improve contrast
+  // Calculate histogram
+  const histogram = new Array(256).fill(0);
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+    histogram[Math.floor(gray)]++;
+  }
+  
+  // Calculate cumulative distribution function
+  const cdf = new Array(256).fill(0);
+  cdf[0] = histogram[0];
+  for (let i = 1; i < 256; i++) {
+    cdf[i] = cdf[i-1] + histogram[i];
+  }
+  
+  // Normalize CDF
+  const cdfMin = cdf.find(v => v > 0);
+  const totalPixels = width * height;
+  for (let i = 0; i < 256; i++) {
+    cdf[i] = Math.round(((cdf[i] - cdfMin) / (totalPixels - cdfMin)) * 255);
+  }
+  
+  // Apply histogram equalization
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
+    const newValue = cdf[Math.floor(gray)];
+    // Boost contrast while maintaining colors
+    const factor = newValue / Math.max(gray, 1);
+    data[i] = Math.min(255, data[i] * factor * 0.9); // R
+    data[i+1] = Math.min(255, data[i+1] * factor * 0.9); // G
+    data[i+2] = Math.min(255, data[i+2] * factor * 0.9); // B
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+}
+
+// Helper function: Merge duplicate detections from multiple scales
+function mergeDuplicateDetections(predictions) {
+  if (predictions.length === 0) return predictions;
+  
+  const merged = [];
+  const used = new Set();
+  
+  for (let i = 0; i < predictions.length; i++) {
+    if (used.has(i)) continue;
+    
+    const p1 = predictions[i];
+    let bestMatch = { index: i, overlap: 0, score: p1.score };
+    
+    // Find overlapping detections (likely duplicates from different scales)
+    for (let j = i + 1; j < predictions.length; j++) {
+      if (used.has(j)) continue;
+      
+      const p2 = predictions[j];
+      
+      // Same class name?
+      if (p1.class.toLowerCase() !== p2.class.toLowerCase()) continue;
+      
+      // Calculate IoU (Intersection over Union)
+      const [x1, y1, w1, h1] = p1.bbox;
+      const [x2, y2, w2, h2] = p2.bbox;
+      
+      const xIntersect = Math.max(0, Math.min(x1 + w1, x2 + w2) - Math.max(x1, x2));
+      const yIntersect = Math.max(0, Math.min(y1 + h1, y2 + h2) - Math.max(y1, y2));
+      const intersection = xIntersect * yIntersect;
+      const union = w1 * h1 + w2 * h2 - intersection;
+      const iou = union > 0 ? intersection / union : 0;
+      
+      // If significant overlap (>0.3), likely same object
+      if (iou > 0.3 && p2.score > bestMatch.score) {
+        bestMatch = { index: j, overlap: iou, score: p2.score };
+      }
+    }
+    
+    // Keep the higher confidence detection
+    const keepIndex = bestMatch.index;
+    merged.push(predictions[keepIndex]);
+    used.add(i);
+    used.add(keepIndex);
+  }
+  
+  return merged;
 }
 
 export default ObjectDetector;
