@@ -78,7 +78,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             if (model.detect) {
               console.log('Running intelligent multi-scale detection');
               // ORIGINAL SCALE - Always detect at original scale first for comprehensive results
-              const pred1 = await model.detect(inputCanvas, 150, 0.12);
+              const pred1 = await model.detect(inputCanvas, 120, 0.12);
               predictions = predictions.concat(pred1);
               
               // SMART SCALING DECISION: Only do additional scales for ambiguous cases
@@ -90,7 +90,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               
               // If room is unclear, run additional scales for better coverage
               // Otherwise, use minimal scales to save time
-              if (roomIndicatorStrength < 15) {
+              if (roomIndicatorStrength < 20) {
                 console.log('Weak room detection - running additional scales for coverage');
                 
                 // UPSCALE for large objects
@@ -100,7 +100,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                   upscaleCanvas.height = Math.round(targetHeight * 1.3);
                   const upscaleCtx = upscaleCanvas.getContext('2d');
                   upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
-                  const pred2 = await model.detect(upscaleCanvas, 120, 0.12);
+                  const pred2 = await model.detect(upscaleCanvas, 100, 0.12);
                   pred2.forEach(p => {
                     p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
                   });
@@ -113,7 +113,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 downscaleCanvas.height = Math.round(targetHeight * 0.8);
                 const downscaleCtx = downscaleCanvas.getContext('2d');
                 downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
-                const pred3 = await model.detect(downscaleCanvas, 120, 0.12);
+                const pred3 = await model.detect(downscaleCanvas, 100, 0.12);
                 pred3.forEach(p => {
                   p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
                 });
