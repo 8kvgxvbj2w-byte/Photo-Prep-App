@@ -17,8 +17,13 @@ function App() {
 
   const handleDetectionComplete = (objects) => {
     setDetectedObjects(objects);
-    const recommendations = filterForRemoval(objects);
-    setRemovalRecommendations(recommendations);
+    // Show ALL detected objects in removal list, not just filtered ones
+    const allItems = objects.map(obj => ({
+      name: obj.class,
+      confidence: (obj.score * 100).toFixed(1),
+      location: `${(obj.bbox[0]).toFixed(0)}, ${(obj.bbox[1]).toFixed(0)}`
+    }));
+    setRemovalRecommendations(allItems);
   };
 
   const filterForRemoval = (objects) => {
