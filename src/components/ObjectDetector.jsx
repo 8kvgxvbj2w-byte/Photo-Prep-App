@@ -82,9 +82,9 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         async function runDetection(model) {
           // OPTIMIZED: Use 800px max dimension for faster processing without quality loss
           const MAX_DIMENSION = 800;
-          const scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
-          const targetWidth = Math.round(img.width * scale);
-          const targetHeight = Math.round(img.height * scale);
+          const detectionScale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
+          const targetWidth = Math.round(img.width * detectionScale);
+          const targetHeight = Math.round(img.height * detectionScale);
 
           // Draw scaled image to an offscreen canvas for detection
           const inputCanvas = document.createElement('canvas');
@@ -124,19 +124,17 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
           onDetectionCompleteRef.current(predictions);
 
-          // Draw bounding boxes
-          if (canvasRef.current) {
+          // Draw bounding boxes on canvas at FULL RESOLUTION matching display image
+          if (canvasRef.current && img.complete) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
             
-            // Set canvas to match the scaled image dimensions
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
+            // Set canvas to ORIGINAL image dimensions (what will be displayed)
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
             
-            console.log('Drawing on canvas:', targetWidth, 'x', targetHeight);
-
-            // Draw scaled image to canvas
-            ctx.drawImage(inputCanvas, 0, 0, targetWidth, targetHeight);
+            console.log('Drawing on canvas at full resolution:', img.naturalWidth, 'x', img.naturalHeight);
+            console.log('Detection was done at scale:', detectionScale);
 
             // Common removal items list for canvas highlighting
             const easyToRemoveItems = [
@@ -188,7 +186,13 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
             // Draw boxes ONLY for relevant items, skip low-confidence and furniture
             predictions.forEach(prediction => {
-              const [x, y, width, height] = prediction.bbox;
+              // Scale bbox coordinates from detection scale back to full image resolution
+              let [x, y, width, height] = prediction.bbox;
+              x = x / detectionScale;
+              y = y / detectionScale;
+              width = width / detectionScale;
+              height = height / detectionScale;
+              
               const score = prediction.score;
               const className = prediction.class.toLowerCase();
               
@@ -215,17 +219,17 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               if (isHighPriority) {
                 boxColor = '#dc2626';
                 labelColor = '#dc2626';
-                fillColor = 'rgba(220, 38, 38, 0.12)';
-                lineWidth = 3;
+                fillColor = 'rgba(220, 38, 38, 0.15)';
+                lineWidth = 4;
               } else if (isKnownItem) {
                 boxColor = '#2563eb';
                 labelColor = '#2563eb';
-                fillColor = 'rgba(37, 99, 235, 0.08)';
-                lineWidth = 2;
+                fillColor = 'rgba(37, 99, 235, 0.1)';
+                lineWidth = 3;
               } else {
                 boxColor = '#f97316';
                 labelColor = '#f97316';
-                fillColor = 'rgba(249, 115, 22, 0.08)';
+                fillColor = 'rgba(249, 115, 22, 0.1)';
                 lineWidth = 2;
               }
 
@@ -239,17 +243,18 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               ctx.strokeRect(x, y, width, height);
 
               // Draw label background
-              ctx.fillStyle = labelColor;
+              ctx.fillStyle = boxColor;
               const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
+              ctx.font = 'bold 16px Arial';
               const textWidth = ctx.measureText(text).width;
-              ctx.fillRect(x, y - 24, textWidth + 12, 24);
+              const labelHeight = 28;
+              ctx.fillRect(x, y - labelHeight, textWidth + 14, labelHeight);
               
               // Draw label text
               ctx.fillStyle = 'white';
-              ctx.font = 'bold 14px Arial';
-              ctx.fillText(text, x + 6, y - 7);
+              ctx.fillText(text, x + 7, y - 8);
             });
-            console.log('Canvas drawn with', predictions.length, 'predictions');
+            console.log('Canvas drawn with', predictions.length, 'predictions at full resolution');
           }
         }
       } catch (err) {
