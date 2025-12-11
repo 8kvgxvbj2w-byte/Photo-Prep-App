@@ -422,81 +422,96 @@ function App() {
     // Convert back to array, maintaining order
     const uniqueSpecificItems = itemOrder.map(key => deduplicatedItems[key]);
 
-    // Only show contextual advice for confidently identified rooms
+    // Add professional styling tips based on detected room type
     const generalRecommendations = [];
     
-    // Add professional styling tips for each confidently identified room
-    if (roomType === 'kitchen' && objects.some(obj => ['oven', 'microwave', 'refrigerator'].includes(obj.class.toLowerCase()))) {
+    // Show room-specific tips even without detecting specific appliances/furniture
+    if (roomType === 'kitchen') {
       generalRecommendations.push({
-        name: '✨ Kitchen Styling Tips',
+        name: '✨ Kitchen Staging Tips',
         confidence: '100',
         location: 'Kitchen',
         type: 'styling',
         tips: [
-          'Clear ALL items from countertops - show maximum counter space',
-          'Remove magnets, papers, and photos from refrigerator',
-          'Hide dish soap, sponges, and cleaning supplies',
-          'Put away small appliances (toaster, coffee maker, mixer)',
-          'Stage with a single bowl of fresh fruit or flowers',
-          'Ensure all cabinet doors are closed',
-          'Polish stainless steel appliances',
-          'Turn on under-cabinet lighting for warm ambiance'
+          '🧹 Clear ALL countertops - show maximum space',
+          '🚫 Remove magnets and papers from fridge',
+          '🧽 Hide dish soap, sponges, cleaning supplies',
+          '☕ Put away small appliances',
+          '🍋 Stage with ONE bowl of fruit or flowers',
+          '✨ Close all cabinet doors',
+          '💡 Turn on under-cabinet lighting'
         ]
       });
-    } else if (roomType === 'bathroom' && objects.some(obj => ['toilet'].includes(obj.class.toLowerCase()))) {
+    } else if (roomType === 'bathroom') {
       generalRecommendations.push({
-        name: '✨ Bathroom Styling Tips',
+        name: '✨ Bathroom Staging Tips',
         confidence: '100',
         location: 'Bathroom',
         type: 'styling',
         tips: [
-          'Remove ALL toiletries from counters and shower',
-          'Hide toothbrushes, soap, shampoo bottles',
-          'Remove bath mats and personal towels',
-          'Close toilet lid and shower curtain',
-          'Stage with 2-3 white fluffy towels, neatly folded',
-          'Add a small plant or candle for spa feel',
-          'Clean mirrors and fixtures until spotless',
-          'Ensure good lighting - turn on all lights'
+          '🚫 Remove ALL toiletries from surfaces',
+          '🪥 Hide toothbrushes, soap, bottles',
+          '🧖 Stage with 2-3 white fluffy towels only',
+          '🚽 Close toilet lid',
+          '🚿 Close shower curtain neatly',
+          '🌿 Add ONE small plant or candle',
+          '✨ Polish mirrors until spotless',
+          '💡 Turn on all lights for spa feel'
         ]
       });
-    } else if (roomType === 'bedroom' && objects.some(obj => ['bed'].includes(obj.class.toLowerCase()))) {
+    } else if (roomType === 'bedroom') {
       generalRecommendations.push({
-        name: '✨ Bedroom Styling Tips',
+        name: '✨ Bedroom Staging Tips',
         confidence: '100',
         location: 'Bedroom',
         type: 'styling',
         tips: [
-          'Make bed with crisp, neutral linens',
-          'Remove ALL personal items from nightstands',
-          'Limit pillows to 4-6 decorative ones maximum',
-          'Clear dresser tops completely',
-          'Hide clothes, shoes, and personal belongings',
-          'Close closet doors (or style if walk-in)',
-          'Add symmetry with matching lamps',
-          'Keep floor clear - creates spacious feel'
+          '🛏️ Make bed with crisp, neutral linens',
+          '🚫 Clear nightstands completely',
+          '🔢 Limit to 4-6 decorative pillows max',
+          '👕 Hide ALL clothes and shoes',
+          '🚪 Close closet doors',
+          '💡 Add matching bedside lamps',
+          '✨ Keep floor completely clear'
         ]
       });
-    } else if (roomType === 'living room' && objects.some(obj => ['couch', 'sofa', 'tv'].includes(obj.class.toLowerCase()))) {
+    } else if (roomType === 'living room') {
       generalRecommendations.push({
-        name: '✨ Living Room Styling Tips',
+        name: '✨ Living Room Staging Tips',
         confidence: '100',
         location: 'Living room',
         type: 'styling',
         tips: [
-          'Clear coffee table except 1-2 styled items',
-          'Limit throw pillows to 3-4 per sofa',
-          'Remove excess blankets and personal items',
-          'Hide remotes, cables, and electronics',
-          'Arrange furniture to show flow and space',
-          'Add fresh flowers or greenery',
-          'Ensure adequate lighting - multiple sources',
-          'Create conversational seating arrangement'
+          '📱 Hide remotes, cables, electronics',
+          '🛋️ Limit throw pillows to 3-4',
+          '☕ Clear coffee table except 1-2 items',
+          '📺 Remove personal photos',
+          '🌺 Add fresh flowers or greenery',
+          '💡 Use multiple light sources',
+          '✨ Show flow and walking space'
+        ]
+      });
+    } else {
+      // Generic tips for unidentified rooms
+      generalRecommendations.push({
+        name: '✨ General Staging Tips',
+        confidence: '100',
+        location: 'Any room',
+        type: 'styling',
+        tips: [
+          '🚫 Remove ALL personal items and clutter',
+          '🧹 Clear surfaces - less is more',
+          '💡 Maximize natural and artificial light',
+          '🌿 Add minimal, neutral decor',
+          '✨ Create sense of space and flow',
+          '📸 Shoot from corners to show room size'
         ]
       });
     }
-
-    return [...uniqueSpecificItems, ...generalRecommendations];
+    
+    const result = [...uniqueSpecificItems, ...generalRecommendations];
+    console.log('filterForRemoval returning:', result.length, 'recommendations');
+    return result;
   };
 
   return (
