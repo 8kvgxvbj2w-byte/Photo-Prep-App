@@ -33,35 +33,39 @@ function App() {
   };
 
   const handleDetectionComplete = (objects) => {
+    console.log('Detection complete, received objects:', objects.length);
     setDetectedObjects(objects);
     
     // Intelligent confidence filtering: adaptive thresholds based on object type and room
     const roomInfo = detectRoomType(objects);
     const roomType = typeof roomInfo === 'string' ? roomInfo : roomInfo.type;
+    console.log('Detected room type:', roomType, roomInfo);
     
     // Learn from usage: boost confidence for frequently detected items in this room type
     const intelligentObjects = objects.filter(obj => {
-      const baseThreshold = 0.35; // Lower base threshold
+      const baseThreshold = 0.15; // Lowered to catch more valid detections
       const className = obj.class.toLowerCase();
       
       // High-priority items always included (people, clutter)
       if (['person', 'dog', 'cat', 'bottle', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
-        return obj.score >= 0.25;
+        return obj.score >= 0.12;
       }
       
       // Room-specific items get lower thresholds
       if (roomType === 'kitchen' && ['cup', 'plate', 'bowl', 'bottle', 'fork', 'knife', 'spoon'].some(k => className.includes(k))) {
-        return obj.score >= 0.28;
+        return obj.score >= 0.12;
       }
       if (roomType === 'bathroom' && ['towel', 'toothbrush', 'soap', 'tissue'].some(b => className.includes(b))) {
-        return obj.score >= 0.28;
+        return obj.score >= 0.12;
       }
       if (roomType === 'bedroom' && ['pillow', 'blanket', 'clothes'].some(b => className.includes(b))) {
-        return obj.score >= 0.28;
+        return obj.score >= 0.12;
       }
       
       return obj.score >= baseThreshold;
     });
+    
+    console.log('After filtering:', intelligentObjects.length, 'objects above threshold');
     
     // Track room detection for self-improvement
     if (roomType !== 'general' && roomInfo.confidence) {
@@ -70,6 +74,7 @@ function App() {
     }
     
     const recommendations = filterForRemoval(intelligentObjects, roomType);
+    console.log('Generated recommendations:', recommendations.length);
     setRemovalRecommendations(recommendations);
   };
 
