@@ -44,7 +44,10 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>📸 Photo Prep</h1>
+        <div className="logo-container">
+          <div className="logo">PP</div>
+          <h1>Photo Prep</h1>
+        </div>
         <p>Real Estate Photo Assistant</p>
       </header>
 
