@@ -114,7 +114,7 @@ function App() {
     const furnitureToKeep = [
       'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
       'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
-      'floor', 'pillow', 'blanket', 'curtain', 'lamp', 'light'
+      'floor', 'curtain', 'lamp', 'light', 'table'
     ];
 
     // Categorize unidentified objects by room and position
