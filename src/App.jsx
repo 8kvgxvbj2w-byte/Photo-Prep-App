@@ -175,8 +175,8 @@ function App() {
       });
     }
     
-    // Always add general clutter advice
-    if (objects.length > 5) {
+    // Always add general clutter advice if room has any objects
+    if (objects.length > 0) {
       generalRecommendations.push({
         name: 'Remove visible clutter and personal items',
         confidence: '100',

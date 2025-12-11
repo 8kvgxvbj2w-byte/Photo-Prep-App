@@ -67,10 +67,10 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
               // Optimized for detecting smaller/distant objects:
-              // - maxNumBoxes: 50 (detect more objects)
-              // - scoreThreshold: 0.25 (lower threshold catches distant items)
+              // - maxNumBoxes: 100 (detect more objects)
+              // - scoreThreshold: 0.15 (very low threshold for maximum detection)
               console.log('Using detect API with enhanced distant object detection');
-              predictions = await model.detect(img, 50, 0.25);
+              predictions = await model.detect(img, 100, 0.15);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
