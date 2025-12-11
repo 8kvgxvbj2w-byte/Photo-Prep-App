@@ -43,18 +43,9 @@ body {
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  color: white;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  letter-spacing: -0.5px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  width: 50px;
+  height: 50px;
+  filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.25));
 }
 
 .app-header h1 {
