@@ -17,19 +17,24 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
       setError(null);
 
       try {
+        console.log('Image received, loading model...');
         // Load the model
         const model = await cocoSsd.load();
+        console.log('Model loaded successfully');
 
         // Get image dimensions
         const img = imgRef.current;
         if (!img.complete) {
+          console.log('Image not loaded yet, waiting...');
           img.onload = () => runDetection();
           return;
         }
 
         const runDetection = async () => {
+          console.log('Running detection on image:', img.width, 'x', img.height);
           // Run detection
           const predictions = await model.estimateObjects(img);
+          console.log('Predictions received:', predictions);
 
           // Sort by confidence
           predictions.sort((a, b) => b.score - a.score);
@@ -66,13 +71,14 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 y - 5
               );
             });
+            console.log('Canvas drawn with', predictions.length, 'predictions');
           }
         };
 
         await runDetection();
       } catch (err) {
-        setError('Failed to detect objects. Please try again.');
-        console.error(err);
+        console.error('Detection error:', err);
+        setError('Failed to detect objects. Please try again.\n' + err.message);
       } finally {
         setIsLoading(false);
       }
@@ -102,7 +108,15 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           )}
           
           {error && (
-            <div className="error-message">
+            <div className="error-message" style={{
+              padding: '15px',
+              backgroundColor: '#ffebee',
+              color: '#c62828',
+              borderRadius: '4px',
+              marginBottom: '10px',
+              fontSize: '14px',
+              whiteSpace: 'pre-wrap'
+            }}>
               {error}
             </div>
           )}
@@ -117,6 +131,18 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           {!isLoading && detectedObjects.length > 0 && (
             <div className="detection-stats">
               <p>Detected {detectedObjects.length} object(s)</p>
+            </div>
+          )}
+          
+          {!isLoading && detectedObjects.length === 0 && !error && (
+            <div style={{
+              padding: '20px',
+              textAlign: 'center',
+              color: '#999',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px'
+            }}>
+              <p>No objects detected in this image</p>
             </div>
           )}
         </div>
