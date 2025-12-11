@@ -143,23 +143,26 @@ function App() {
       // Living room items
       'cushion', 'throw pillow', 'throw blanket', 'couch throw', 'ottoman', 'footstool',
       
-      // General clutter
+      // Obvious clutter and mess (always remove)
       'scissors', 'pen', 'pencil', 'paper', 'document', 'mail', 'magazine',
-      'book', 'notebook', 'clipboard', 'folder', 'binder',
-      'box', 'container', 'basket', 'bag', 'pouch', 'case',
-      'picture', 'photo', 'poster', 'artwork', 'frame',
-      'candle', 'decoration', 'ornament', 'figurine', 'statue',
-      'flower', 'plant', 'flowers', 'bouquet',
-      
-      // Additional clutter
+      'notebook', 'clipboard', 'folder', 'binder',
+      'box', 'container', 'bag', 'pouch', 'case',
       'wire', 'cable', 'cord', 'charger', 'adapter',
       'trash', 'garbage', 'waste', 'recycling',
       'cleaning', 'supplies', 'mop', 'broom', 'vacuum',
       'tool', 'tools', 'toolbox',
       'clothing', 'laundry', 'clothes',
-      'rug', 'mat', 'carpet',
       'sign', 'sticker', 'label',
       'package', 'packaging', 'wrapping'
+    ];
+    
+    // Home decor items (can stay if minimal and styled)
+    const decorItems = [
+      'picture', 'photo', 'poster', 'artwork', 'frame',
+      'candle', 'decoration', 'ornament', 'figurine', 'statue',
+      'flower', 'plant', 'flowers', 'bouquet',
+      'book', 'basket',
+      'rug', 'mat', 'carpet'
     ];
     
     // Items to EXCLUDE (only major fixed furniture/appliances that should stay)
@@ -179,31 +182,61 @@ function App() {
         return null;
       }
       
+      // Check if it's decor vs clutter
+      const isDecorItem = decorItems.some(item => 
+        name.includes(item) || item.includes(name)
+      );
+      
       // If it matches a known easy-to-remove item, return it with detailed reason
       if (easyToRemoveItems.some(item => 
         name.includes(item) || item.includes(name)
       )) {
         let reason = '';
+        let category = 'clutter';
         
         // Provide specific reasons based on item type
         if (['person', 'dog', 'cat', 'bird'].some(p => name.includes(p))) {
           reason = 'Buyers focus on the space, not current occupants';
+          category = 'occupant';
         } else if (['bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug', 'fork', 'knife', 'spoon'].some(i => name.includes(i))) {
           reason = 'Clear surfaces make kitchens look spacious and clean';
+          category = 'mess';
         } else if (['towel', 'toothbrush', 'soap', 'shampoo', 'lotion', 'makeup', 'cosmetics'].some(i => name.includes(i))) {
           reason = 'Bathrooms should look spa-like and depersonalized';
+          category = 'mess';
         } else if (['pillow', 'blanket', 'sheet', 'clothes', 'jacket', 'shirt', 'pants', 'shoes'].some(i => name.includes(i))) {
           reason = 'Bedrooms need minimal styling - less is more';
+          category = 'mess';
         } else if (['laptop', 'phone', 'remote', 'keyboard', 'mouse', 'headphones'].some(i => name.includes(i))) {
           reason = 'Electronics create visual clutter and distraction';
-        } else if (['book', 'paper', 'magazine', 'document', 'mail'].some(i => name.includes(i))) {
-          reason = 'Paper clutter makes spaces look busy and disorganized';
+          category = 'clutter';
+        } else if (['paper', 'magazine', 'document', 'mail', 'trash', 'garbage'].some(i => name.includes(i))) {
+          reason = 'Paper clutter and trash makes spaces look busy and unkempt';
+          category = 'mess';
+        } else if (['wire', 'cable', 'cord', 'charger'].some(i => name.includes(i))) {
+          reason = 'Visible cables and wires look messy and unprofessional';
+          category = 'mess';
+        } else if (['cleaning', 'mop', 'broom', 'vacuum', 'tool'].some(i => name.includes(i))) {
+          reason = 'Cleaning supplies and tools should be hidden away';
+          category = 'mess';
         } else if (['toy', 'teddy bear', 'doll', 'game'].some(i => name.includes(i))) {
           reason = 'Toys distract from the home\'s features';
-        } else if (['photo', 'picture', 'artwork', 'poster'].some(i => name.includes(i))) {
+          category = 'clutter';
+        } else if (['photo', 'picture'].some(i => name.includes(i))) {
           reason = 'Personal photos should be removed for neutral appeal';
+          category = 'personal';
+        } else if (['book'].includes(name)) {
+          reason = 'Too many books create visual clutter - limit to 3-5 styled books';
+          category = 'decor-excessive';
+        } else if (['candle', 'flower', 'plant', 'bouquet'].some(i => name.includes(i))) {
+          reason = 'Decor is good, but keep minimal - 1-2 accent pieces per surface';
+          category = 'decor-check';
+        } else if (['artwork', 'poster', 'decoration', 'ornament'].some(i => name.includes(i))) {
+          reason = 'Evaluate if decor is tasteful and minimal - remove if excessive';
+          category = 'decor-check';
         } else {
           reason = 'Creates visual clutter - clear for photos';
+          category = 'clutter';
         }
         
         return {
@@ -211,7 +244,8 @@ function App() {
           confidence: '100',
           location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
           type: 'specific',
-          reason: reason
+          reason: reason,
+          itemCategory: category
         };
       }
       

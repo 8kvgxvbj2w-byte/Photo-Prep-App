@@ -33,16 +33,28 @@ function RemovalList({ recommendations, totalDetected }) {
                         </ul>
                       </div>
                     ) : (
-                      // Regular removal item
+                      // Regular removal item with category icons
                       <>
                         <div className="item-header">
-                          <span className="item-name">{item.name}</span>
-                          <span className="item-confidence">{item.confidence}%</span>
+                          <span className="item-name">
+                            {item.itemCategory === 'mess' && '🗑️ '}
+                            {item.itemCategory === 'clutter' && '📦 '}
+                            {item.itemCategory === 'occupant' && '👤 '}
+                            {item.itemCategory === 'personal' && '🖼️ '}
+                            {item.itemCategory === 'decor-excessive' && '📚 '}
+                            {item.itemCategory === 'decor-check' && '🎨 '}
+                            {item.name}
+                          </span>
+                          <span className={`item-confidence ${item.itemCategory === 'decor-check' || item.itemCategory === 'decor-excessive' ? 'decor-badge' : ''}`}>
+                            {item.confidence}%
+                          </span>
                         </div>
                         {item.reason && (
-                          <p className="item-reason">💡 {item.reason}</p>
+                          <p className={`item-reason ${item.itemCategory?.includes('decor') ? 'decor-reason' : ''}`}>
+                            {item.itemCategory?.includes('decor') ? '🎨' : '💡'} {item.reason}
+                          </p>
                         )}
-                        {item.category && (
+                        {item.category && !item.itemCategory && (
                           <p className="item-category">{item.category}</p>
                         )}
                         <p className="item-location">Location: ({item.location})</p>
