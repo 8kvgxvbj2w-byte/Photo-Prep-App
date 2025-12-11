@@ -18,6 +18,9 @@ function CameraCapture({ onCapture, image }) {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         console.log('Video ref set, playing...');
+        videoRef.current.play().catch(err => {
+          console.error('Play error:', err);
+        });
         setIsCameraActive(true);
       }
     } catch (err) {
@@ -90,8 +93,10 @@ function CameraCapture({ onCapture, image }) {
               <video 
                 ref={videoRef} 
                 autoPlay 
+                muted
                 playsInline
                 className="camera-video"
+                style={{ width: '100%', display: 'block', aspectRatio: '4/3', objectFit: 'cover', backgroundColor: '#000' }}
               />
             )}
             
