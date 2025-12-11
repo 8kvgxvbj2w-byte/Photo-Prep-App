@@ -53,18 +53,30 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           console.log('Model loaded and cached successfully');
         }
 
-        // Get image dimensions
+        // Get image dimensions - wait for image to load
         const img = imgRef.current;
-        if (!img.complete) {
-          console.log('Image not loaded yet, waiting for onload...');
-          img.onload = () => {
-            console.log('Image loaded, dimensions:', img.width, 'x', img.height);
-            runDetection(model);
-          };
-          return;
+        if (!img) {
+          throw new Error('Image reference not found');
         }
         
-        console.log('Image already loaded, dimensions:', img.width, 'x', img.height);
+        const loadImage = () => {
+          return new Promise((resolve) => {
+            if (img.complete) {
+              console.log('Image already loaded, dimensions:', img.width, 'x', img.height);
+              resolve();
+            } else {
+              img.onload = () => {
+                console.log('Image loaded, dimensions:', img.width, 'x', img.height);
+                resolve();
+              };
+              img.onerror = () => {
+                throw new Error('Failed to load image');
+              };
+            }
+          });
+        };
+        
+        await loadImage();
         await runDetection(model);
 
         async function runDetection(model) {
@@ -287,11 +299,22 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           )}
           
           {!isLoading && image && (
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <canvas 
                 ref={canvasRef} 
                 className="detection-canvas"
               />
+              {canvasRef.current?.width === 0 && (
+                <img 
+                  src={image} 
+                  alt="Detection result"
+                  style={{
+                    width: '100%',
+                    borderRadius: '12px',
+                    border: '1px solid #f0f0f0'
+                  }}
+                />
+              )}
             </div>
           )}
 
