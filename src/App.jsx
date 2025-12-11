@@ -17,12 +17,48 @@ function App() {
 
   const handleDetectionComplete = (objects) => {
     setDetectedObjects(objects);
+    
+    // Detect room type based on objects
+    const roomType = detectRoomType(objects);
+    
     // Filter for easily movable items, excluding large furniture
-    const recommendations = filterForRemoval(objects);
+    const recommendations = filterForRemoval(objects, roomType);
     setRemovalRecommendations(recommendations);
   };
 
-  const filterForRemoval = (objects) => {
+  const detectRoomType = (objects) => {
+    const classes = objects.map(obj => obj.class.toLowerCase());
+    
+    // Kitchen indicators
+    if (classes.some(c => ['oven', 'microwave', 'refrigerator', 'sink', 'toaster'].includes(c))) {
+      return 'kitchen';
+    }
+    
+    // Bathroom indicators
+    if (classes.some(c => ['toilet', 'sink'].includes(c)) && 
+        !classes.some(c => ['oven', 'refrigerator'].includes(c))) {
+      return 'bathroom';
+    }
+    
+    // Bedroom indicators
+    if (classes.some(c => ['bed'].includes(c))) {
+      return 'bedroom';
+    }
+    
+    // Living room indicators
+    if (classes.some(c => ['couch', 'tv', 'remote'].includes(c))) {
+      return 'living room';
+    }
+    
+    // Dining room indicators
+    if (classes.some(c => ['dining table'].includes(c))) {
+      return 'dining room';
+    }
+    
+    return 'general';
+  };
+
+  const filterForRemoval = (objects, roomType) => {
     // ONLY easily movable clutter - exclude large furniture
     const easyToRemoveItems = [
       // People and pets (always remove)
@@ -59,7 +95,7 @@ function App() {
       'microwave', 'bench', 'potted plant', 'clock', 'vase'
     ];
 
-    return objects
+    const specificItems = objects
       .filter(obj => {
         const className = obj.class.toLowerCase();
         
@@ -78,8 +114,78 @@ function App() {
       .map(obj => ({
         name: obj.class,
         confidence: (obj.score * 100).toFixed(1),
-        location: `${(obj.bbox[0]).toFixed(0)}, ${(obj.bbox[1]).toFixed(0)}`
+        location: `${(obj.bbox[0]).toFixed(0)}, ${(obj.bbox[1]).toFixed(0)}`,
+        type: 'specific'
       }));
+
+    // Add contextual general recommendations based on room type
+    const generalRecommendations = [];
+    
+    if (roomType === 'kitchen') {
+      generalRecommendations.push({
+        name: 'Clear all items off countertops',
+        confidence: '100',
+        location: 'Kitchen surfaces',
+        type: 'general'
+      });
+      generalRecommendations.push({
+        name: 'Remove magnets and papers from refrigerator',
+        confidence: '100',
+        location: 'Refrigerator',
+        type: 'general'
+      });
+    } else if (roomType === 'bathroom') {
+      generalRecommendations.push({
+        name: 'Clear toiletries from countertops',
+        confidence: '100',
+        location: 'Bathroom counter',
+        type: 'general'
+      });
+      generalRecommendations.push({
+        name: 'Remove bath mats and towels',
+        confidence: '100',
+        location: 'Bathroom floor',
+        type: 'general'
+      });
+    } else if (roomType === 'bedroom') {
+      generalRecommendations.push({
+        name: 'Clear nightstand clutter',
+        confidence: '100',
+        location: 'Nightstand',
+        type: 'general'
+      });
+      generalRecommendations.push({
+        name: 'Remove personal items from dresser',
+        confidence: '100',
+        location: 'Dresser top',
+        type: 'general'
+      });
+    } else if (roomType === 'living room') {
+      generalRecommendations.push({
+        name: 'Clear coffee table surface',
+        confidence: '100',
+        location: 'Coffee table',
+        type: 'general'
+      });
+      generalRecommendations.push({
+        name: 'Remove excess throw pillows and blankets',
+        confidence: '100',
+        location: 'Seating area',
+        type: 'general'
+      });
+    }
+    
+    // Always add general clutter advice
+    if (objects.length > 5) {
+      generalRecommendations.push({
+        name: 'Remove visible clutter and personal items',
+        confidence: '100',
+        location: 'Throughout space',
+        type: 'general'
+      });
+    }
+
+    return [...specificItems, ...generalRecommendations];
   };
 
   return (
