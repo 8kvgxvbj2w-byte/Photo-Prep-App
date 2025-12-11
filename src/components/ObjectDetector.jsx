@@ -56,7 +56,19 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         await runDetection(model);
 
         async function runDetection(model) {
-          console.log('Running detection on image:', img.width, 'x', img.height);
+          const MAX_DIMENSION = 1280; // downscale large images to avoid canvas/GPU glitches
+          const scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
+          const targetWidth = Math.round(img.width * scale);
+          const targetHeight = Math.round(img.height * scale);
+
+          // Draw scaled image to an offscreen canvas for detection
+          const inputCanvas = document.createElement('canvas');
+          inputCanvas.width = targetWidth;
+          inputCanvas.height = targetHeight;
+          const inputCtx = inputCanvas.getContext('2d');
+          inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+          console.log('Running detection on image (scaled):', targetWidth, 'x', targetHeight, 'scale', scale.toFixed(3));
           // Run detection with optimized parameters for distant objects
           let predictions;
           try {
@@ -70,7 +82,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               // - maxNumBoxes: 100 (detect more objects)
               // - scoreThreshold: 0.15 (very low threshold for maximum detection)
               console.log('Using detect API with enhanced distant object detection');
-              predictions = await model.detect(img, 100, 0.15);
+              predictions = await model.detect(inputCanvas, 100, 0.15);
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
@@ -94,11 +106,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
             
-            canvas.width = img.width;
-            canvas.height = img.height;
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
 
-            // Draw image
-            ctx.drawImage(img, 0, 0);
+            // Draw scaled image
+            ctx.drawImage(inputCanvas, 0, 0);
 
             // Common removal items list for canvas highlighting
             const easyToRemoveItems = [
