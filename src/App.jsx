@@ -29,75 +29,84 @@ function App() {
   const detectRoomType = (objects) => {
     const classes = objects.map(obj => obj.class.toLowerCase());
     
-    // Count indicators for each room type with weighted scoring
+    // ENHANCED room indicators with more specific patterns
     const kitchenIndicators = {
-      strong: ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher'], // 3 points each
-      medium: ['toaster', 'kettle', 'pot', 'pan', 'sink'] // 1 point each
+      strong: ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher', 'sink', 'countertop'], // 5 points each
+      medium: ['toaster', 'kettle', 'pot', 'pan', 'glass', 'cup', 'plate', 'bowl', 'dish', 'bottle', 'fork', 'spoon', 'knife'], // 2 points each
+      weak: ['table', 'chair', 'cabinet', 'drawer', 'light'] // 0.5 points each
     };
+    
     const bathroomIndicators = {
-      strong: ['toilet', 'bathtub', 'shower'], // 5 points each
-      medium: ['towel', 'bathroom accessories'] // 1 point each
+      strong: ['toilet', 'bathtub', 'shower', 'sink', 'mirror'], // 5 points each
+      medium: ['towel', 'toothbrush', 'shampoo', 'soap', 'lotion', 'toilet paper', 'tissue'], // 2 points each
+      weak: ['cabinet', 'light', 'door'] // 0.5 points each
     };
+    
     const bedroomIndicators = {
-      strong: ['bed'], // 5 points
-      medium: ['pillow', 'blanket', 'nightstand', 'dresser'] // 1 point each
+      strong: ['bed', 'bedspread', 'pillow', 'blanket', 'nightstand', 'dresser'], // 5 points each
+      medium: ['lamp', 'mirror', 'chair', 'desk', 'closet', 'hanger'], // 2 points each
+      weak: ['wall', 'floor', 'window', 'door'] // 0.5 points each
     };
+    
     const livingRoomIndicators = {
-      strong: ['couch', 'sofa'], // 3 points each
-      medium: ['tv', 'remote', 'coffee table'] // 1 point each
+      strong: ['couch', 'sofa', 'tv', 'coffee table', 'armchair', 'recliner'], // 5 points each
+      medium: ['lamp', 'rug', 'picture', 'cushion', 'throw pillow', 'ottoman'], // 2 points each
+      weak: ['chair', 'table', 'wall', 'window', 'light'] // 0.5 points each
     };
+    
     const diningRoomIndicators = {
-      strong: ['dining table'], // 5 points
-      medium: ['chair'] // 1 point
+      strong: ['dining table', 'chair', 'place setting'], // 5 points each
+      medium: ['plate', 'glass', 'fork', 'knife', 'spoon', 'napkin', 'centerpiece'], // 2 points each
+      weak: ['table', 'chandelier', 'wall', 'window'] // 0.5 points each
     };
     
     // Calculate weighted scores
-    let kitchenScore = 0;
-    let bathroomScore = 0;
-    let bedroomScore = 0;
-    let livingRoomScore = 0;
-    let diningRoomScore = 0;
+    let scores = {
+      kitchen: 0,
+      bathroom: 0,
+      bedroom: 0,
+      'living room': 0,
+      'dining room': 0
+    };
     
     classes.forEach(c => {
-      // Kitchen scoring
-      if (kitchenIndicators.strong.includes(c)) kitchenScore += 3;
-      else if (kitchenIndicators.medium.includes(c)) kitchenScore += 1;
+      // Kitchen
+      if (kitchenIndicators.strong.some(k => c.includes(k))) scores.kitchen += 5;
+      else if (kitchenIndicators.medium.some(k => c.includes(k))) scores.kitchen += 2;
+      else if (kitchenIndicators.weak.some(k => c.includes(k))) scores.kitchen += 0.5;
       
-      // Bathroom scoring
-      if (bathroomIndicators.strong.includes(c)) bathroomScore += 5;
-      else if (bathroomIndicators.medium.includes(c)) bathroomScore += 1;
+      // Bathroom
+      if (bathroomIndicators.strong.some(k => c.includes(k))) scores.bathroom += 5;
+      else if (bathroomIndicators.medium.some(k => c.includes(k))) scores.bathroom += 2;
+      else if (bathroomIndicators.weak.some(k => c.includes(k))) scores.bathroom += 0.5;
       
-      // Bedroom scoring
-      if (bedroomIndicators.strong.includes(c)) bedroomScore += 5;
-      else if (bedroomIndicators.medium.includes(c)) bedroomScore += 1;
+      // Bedroom
+      if (bedroomIndicators.strong.some(k => c.includes(k))) scores.bedroom += 5;
+      else if (bedroomIndicators.medium.some(k => c.includes(k))) scores.bedroom += 2;
+      else if (bedroomIndicators.weak.some(k => c.includes(k))) scores.bedroom += 0.5;
       
-      // Living room scoring
-      if (livingRoomIndicators.strong.includes(c)) livingRoomScore += 3;
-      else if (livingRoomIndicators.medium.includes(c)) livingRoomScore += 1;
+      // Living room
+      if (livingRoomIndicators.strong.some(k => c.includes(k))) scores['living room'] += 5;
+      else if (livingRoomIndicators.medium.some(k => c.includes(k))) scores['living room'] += 2;
+      else if (livingRoomIndicators.weak.some(k => c.includes(k))) scores['living room'] += 0.5;
       
-      // Dining room scoring
-      if (diningRoomIndicators.strong.includes(c)) diningRoomScore += 5;
-      else if (diningRoomIndicators.medium.includes(c)) diningRoomScore += 1;
+      // Dining room
+      if (diningRoomIndicators.strong.some(k => c.includes(k))) scores['dining room'] += 5;
+      else if (diningRoomIndicators.medium.some(k => c.includes(k))) scores['dining room'] += 2;
+      else if (diningRoomIndicators.weak.some(k => c.includes(k))) scores['dining room'] += 0.5;
     });
     
-    // Find highest scoring room type (minimum score of 2 required)
-    const scores = [
-      { type: 'bathroom', score: bathroomScore },
-      { type: 'kitchen', score: kitchenScore },
-      { type: 'bedroom', score: bedroomScore },
-      { type: 'living room', score: livingRoomScore },
-      { type: 'dining room', score: diningRoomScore }
-    ];
+    // Find room with highest score
+    const sorted = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, score]) => ({ type, score }));
     
-    // Sort by score descending
-    scores.sort((a, b) => b.score - a.score);
-    
-    // Return highest scoring room if it meets minimum threshold
-    if (scores[0].score >= 2) {
-      return scores[0].type;
+    // Return highest if it significantly outscores others
+    if (sorted[0].score > sorted[1].score * 1.5 && sorted[0].score >= 5) {
+      return { type: sorted[0].type, confidence: sorted[0].score, allScores: scores };
     }
     
-    return 'general';
+    return { type: 'general', confidence: 0, allScores: scores };
   };
 
   const filterForRemoval = (objects, roomType) => {

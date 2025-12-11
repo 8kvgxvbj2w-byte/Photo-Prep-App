@@ -77,38 +77,52 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           let predictions = [];
           try {
             if (model.detect) {
-              console.log('Running multi-scale detection for comprehensive object recognition');
-              // Original scale
+              console.log('Running intelligent multi-scale detection');
+              // ORIGINAL SCALE - Always detect at original scale first for comprehensive results
               const pred1 = await model.detect(inputCanvas, 200, 0.08);
               predictions = predictions.concat(pred1);
               
-              // 1.3x scale (upsampled) - catches larger objects with more detail
-              if (targetWidth * 1.3 < 1600) { // Don't exceed browser limits
-                const upscaleCanvas = document.createElement('canvas');
-                upscaleCanvas.width = Math.round(targetWidth * 1.3);
-                upscaleCanvas.height = Math.round(targetHeight * 1.3);
-                const upscaleCtx = upscaleCanvas.getContext('2d');
-                upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
-                const pred2 = await model.detect(upscaleCanvas, 150, 0.08);
-                // Scale bounding boxes back down
-                pred2.forEach(p => {
-                  p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
-                });
-                predictions = predictions.concat(pred2);
-              }
+              // SMART SCALING DECISION: Only do additional scales for ambiguous cases
+              // Check if we have enough good detections for basic room identification
+              const topDetections = pred1.sort((a, b) => b.score - a.score).slice(0, 10);
+              const roomIndicatorStrength = analyzeRoomStrength(topDetections);
               
-              // 0.8x scale (downsampled) - catches small objects at distance
-              const downscaleCanvas = document.createElement('canvas');
-              downscaleCanvas.width = Math.round(targetWidth * 0.8);
-              downscaleCanvas.height = Math.round(targetHeight * 0.8);
-              const downscaleCtx = downscaleCanvas.getContext('2d');
-              downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
-              const pred3 = await model.detect(downscaleCanvas, 150, 0.08);
-              // Scale bounding boxes back up
-              pred3.forEach(p => {
-                p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
-              });
-              predictions = predictions.concat(pred3);
+              console.log('Room indicator strength:', roomIndicatorStrength);
+              
+              // If room is unclear, run additional scales for better coverage
+              // Otherwise, use minimal scales to save time
+              if (roomIndicatorStrength < 15) {
+                console.log('Weak room detection - running additional scales for coverage');
+                
+                // UPSCALE for large objects
+                if (targetWidth * 1.3 < 1600) {
+                  const upscaleCanvas = document.createElement('canvas');
+                  upscaleCanvas.width = Math.round(targetWidth * 1.3);
+                  upscaleCanvas.height = Math.round(targetHeight * 1.3);
+                  const upscaleCtx = upscaleCanvas.getContext('2d');
+                  upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
+                  const pred2 = await model.detect(upscaleCanvas, 150, 0.08);
+                  pred2.forEach(p => {
+                    p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
+                  });
+                  predictions = predictions.concat(pred2);
+                }
+                
+                // DOWNSCALE for small distant objects
+                const downscaleCanvas = document.createElement('canvas');
+                downscaleCanvas.width = Math.round(targetWidth * 0.8);
+                downscaleCanvas.height = Math.round(targetHeight * 0.8);
+                const downscaleCtx = downscaleCanvas.getContext('2d');
+                downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
+                const pred3 = await model.detect(downscaleCanvas, 150, 0.08);
+                pred3.forEach(p => {
+                  p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
+                });
+                predictions = predictions.concat(pred3);
+              } else {
+                console.log('Strong room detection - using optimized single-scale for speed');
+                // Room is clear, use just the original scale for faster results
+              }
               
               // Merge duplicate detections from multiple scales
               predictions = mergeDuplicateDetections(predictions);
@@ -423,6 +437,28 @@ function mergeDuplicateDetections(predictions) {
   }
   
   return merged;
+}
+
+// Helper function: Analyze if detections contain strong room indicators
+function analyzeRoomStrength(detections) {
+  const kitchenStrong = ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher'];
+  const bathroomStrong = ['toilet', 'bathtub', 'shower'];
+  const bedroomStrong = ['bed'];
+  const livingRoomStrong = ['couch', 'sofa', 'tv'];
+
+  let strength = 0;
+  
+  detections.forEach(det => {
+    const className = det.class.toLowerCase();
+    
+    // Add points for strong indicators
+    if (kitchenStrong.concat(bathroomStrong).concat(bedroomStrong).concat(livingRoomStrong)
+      .some(indicator => className.includes(indicator))) {
+      strength += det.score * 10; // Weight by confidence
+    }
+  });
+  
+  return strength;
 }
 
 export default ObjectDetector;
