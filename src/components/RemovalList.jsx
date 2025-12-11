@@ -44,6 +44,9 @@ function RemovalList({ recommendations, totalDetected }) {
                             {item.itemCategory === 'decor-excessive' && '📚 '}
                             {item.itemCategory === 'decor-check' && '🎨 '}
                             {item.name}
+                            {item.count && item.count > 1 && (
+                              <span className="item-count-badge"> ×{item.count}</span>
+                            )}
                           </span>
                           <span className={`item-confidence ${item.itemCategory === 'decor-check' || item.itemCategory === 'decor-excessive' ? 'decor-badge' : ''}`}>
                             {item.confidence}%

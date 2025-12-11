@@ -297,6 +297,26 @@ function App() {
       .map(obj => categorizeClutter(obj.class, roomType, obj.bbox))
       .filter(item => item !== null);
 
+    // Deduplicate items - group by item name and show only once with count
+    const deduplicatedItems = {};
+    const itemOrder = [];
+    
+    specificItems.forEach(item => {
+      const itemKey = item.name.toLowerCase();
+      if (!deduplicatedItems[itemKey]) {
+        deduplicatedItems[itemKey] = {
+          ...item,
+          count: 1
+        };
+        itemOrder.push(itemKey);
+      } else {
+        deduplicatedItems[itemKey].count += 1;
+      }
+    });
+    
+    // Convert back to array, maintaining order
+    const uniqueSpecificItems = itemOrder.map(key => deduplicatedItems[key]);
+
     // Only show contextual advice for confidently identified rooms
     const generalRecommendations = [];
     
@@ -371,7 +391,7 @@ function App() {
       });
     }
 
-    return [...specificItems, ...generalRecommendations];
+    return [...uniqueSpecificItems, ...generalRecommendations];
   };
 
   return (

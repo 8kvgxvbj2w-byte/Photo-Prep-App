@@ -101,6 +101,20 @@
   color: #1a1a1a;
   text-transform: capitalize;
   font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.item-count-badge {
+  display: inline-block;
+  background: #ef4444;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 0.3rem;
 }
 
 .item-confidence {
