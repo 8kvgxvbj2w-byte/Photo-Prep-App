@@ -32,8 +32,23 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
         const runDetection = async () => {
           console.log('Running detection on image:', img.width, 'x', img.height);
-          // Run detection
-          const predictions = await model.estimateObjects(img);
+          // Run detection - use detect() instead of estimateObjects()
+          let predictions;
+          try {
+            // Try the newer API first
+            if (model.estimateObjects) {
+              predictions = await model.estimateObjects(img);
+            } else if (model.detect) {
+              // Fallback to detect() which is the standard COCO-SSD API
+              predictions = await model.detect(img);
+            } else {
+              throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
+            }
+          } catch (methodErr) {
+            console.error('Detection method error:', methodErr);
+            throw new Error(`Detection method failed: ${methodErr.message}`);
+          }
+          
           console.log('Predictions received:', predictions);
 
           // Sort by confidence
