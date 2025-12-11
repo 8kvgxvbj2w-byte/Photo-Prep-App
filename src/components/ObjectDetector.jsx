@@ -102,7 +102,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           try {
             if (model.detect) {
               // Single detection pass with balanced settings
-              predictions = await model.detect(inputCanvas, 100, 0.15);
+              predictions = await model.detect(inputCanvas, 150, 0.12);
               console.log('Single-pass detection complete:', predictions.length, 'objects');
             } else if (model.estimateObjects) {
               predictions = await model.estimateObjects(img);
