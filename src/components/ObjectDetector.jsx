@@ -287,11 +287,10 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           )}
           
           {!isLoading && image && (
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
               <canvas 
                 ref={canvasRef} 
                 className="detection-canvas"
-                style={{ display: 'block', width: '100%' }}
               />
             </div>
           )}

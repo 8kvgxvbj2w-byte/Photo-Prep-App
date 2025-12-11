@@ -33,10 +33,12 @@
 
 .detection-canvas {
   width: 100%;
-  max-height: 500px;
+  max-width: 100%;
+  height: auto;
   border-radius: 12px;
   display: block;
   border: 1px solid #f0f0f0;
+  background: white;
 }
 
 .detection-stats {
