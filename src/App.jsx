@@ -33,7 +33,11 @@ function App() {
       'toy', 'teddy bear', 'kite', 'sports ball', 'baseball bat', 'skateboard', 'surfboard', 'tennis racket',
       'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
       'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
-      'skis', 'snowboard', 'sports', 'ball', 'baseball', 'glove', 'skateboard'
+      'skis', 'snowboard', 'sports', 'ball', 'baseball', 'glove', 'skateboard',
+      // Items that may contain or represent paper/clutter
+      'book', 'laptop', 'cell phone', 'remote', 'keyboard', 'mouse', 'bottle', 'wine glass', 'cup',
+      'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
+      'hot dog', 'pizza', 'donut', 'cake', 'scissors', 'hair drier', 'toothbrush'
     ];
 
     return objects

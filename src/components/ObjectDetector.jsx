@@ -22,14 +22,16 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         console.log('Image received, loading model...');
         console.log('Image data length:', image.length);
         
-        // Load or use cached model
+        // Load or use cached model with higher accuracy settings
         let model;
         if (modelCache) {
           console.log('Using cached model');
           model = modelCache;
         } else {
           console.log('Loading new model...');
-          const modelPromise = cocoSsd.load();
+          const modelPromise = cocoSsd.load({
+            base: 'mobilenet_v2' // More accurate than lite model
+          });
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Model loading timeout after 30 seconds')), 30000)
           );
@@ -55,7 +57,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
 
         async function runDetection(model) {
           console.log('Running detection on image:', img.width, 'x', img.height);
-          // Run detection - use detect() instead of estimateObjects()
+          // Run detection with lower threshold for better sensitivity
           let predictions;
           try {
             // Try the newer API first
@@ -64,8 +66,9 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               predictions = await model.estimateObjects(img);
             } else if (model.detect) {
               // Fallback to detect() which is the standard COCO-SSD API
+              // Lower maxNumBoxes and score threshold for better detection
               console.log('Using detect API');
-              predictions = await model.detect(img);
+              predictions = await model.detect(img, 20, 0.3); // Detect up to 20 objects with 30% confidence
             } else {
               throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
             }
