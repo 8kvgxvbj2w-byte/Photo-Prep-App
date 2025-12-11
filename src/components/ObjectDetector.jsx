@@ -10,11 +10,14 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
   const [error, setError] = useState(null);
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
+  const detectingRef = useRef(false); // prevent overlapping detections
 
   useEffect(() => {
     if (!image) return;
 
     const detectObjects = async () => {
+      if (detectingRef.current) return; // avoid duplicate runs (e.g., from double renders)
+      detectingRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -279,6 +282,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         setError('Failed to detect objects:\n' + (err.message || String(err)));
       } finally {
         setIsLoading(false);
+        detectingRef.current = false;
       }
     };
 
