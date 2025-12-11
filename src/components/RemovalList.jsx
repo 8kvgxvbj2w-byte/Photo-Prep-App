@@ -24,6 +24,9 @@ function RemovalList({ recommendations, totalDetected }) {
                       <span className="item-name">{item.name}</span>
                       <span className="item-confidence">{item.confidence}%</span>
                     </div>
+                    {item.category && (
+                      <p className="item-category">{item.category}</p>
+                    )}
                     <p className="item-location">Location: ({item.location})</p>
                   </li>
                 ))}

@@ -101,31 +101,80 @@ function App() {
     // Items to EXCLUDE (large furniture that should stay)
     const furnitureToKeep = [
       'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
-      'microwave', 'bench', 'potted plant', 'clock', 'vase'
+      'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
+      'floor', 'pillow', 'blanket', 'curtain', 'lamp', 'light'
     ];
 
+    // Categorize unidentified objects by room and position
+    const categorizeClutter = (className, roomType, bbox) => {
+      const name = className.toLowerCase();
+      
+      // Check if it's furniture we should keep
+      if (furnitureToKeep.some(furniture => 
+        name.includes(furniture) || furniture.includes(name)
+      )) {
+        return null;
+      }
+      
+      // If it matches a known easy-to-remove item, return it as-is
+      if (easyToRemoveItems.some(item => 
+        name.includes(item) || item.includes(name)
+      )) {
+        return {
+          name: className,
+          confidence: '100',
+          location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
+          type: 'specific'
+        };
+      }
+      
+      // For unidentified objects, categorize by room context
+      // Kitchen: likely dishes, bottles, food containers
+      if (roomType === 'kitchen') {
+        return {
+          name: 'Kitchen clutter',
+          confidence: '85',
+          location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
+          type: 'categorized',
+          category: 'Dishes, bottles, or items on surfaces'
+        };
+      }
+      
+      // Bathroom: likely toiletries, bottles, products
+      if (roomType === 'bathroom') {
+        return {
+          name: 'Bathroom items',
+          confidence: '85',
+          location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
+          type: 'categorized',
+          category: 'Toiletries, bottles, or personal items'
+        };
+      }
+      
+      // Bedroom: likely clothes, pillows, items on surfaces
+      if (roomType === 'bedroom') {
+        return {
+          name: 'Bedroom clutter',
+          confidence: '85',
+          location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
+          type: 'categorized',
+          category: 'Clothes, items on surfaces, or personal belongings'
+        };
+      }
+      
+      // Living room/general: likely decorative items, books, remotes
+      return {
+        name: 'Visible clutter',
+        confidence: '85',
+        location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
+        type: 'categorized',
+        category: 'Remove this object'
+      };
+    };
+
     const specificItems = objects
-      .filter(obj => {
-        const className = obj.class.toLowerCase();
-        
-        // Skip if it's furniture
-        if (furnitureToKeep.some(furniture => 
-          className.includes(furniture) || furniture.includes(className)
-        )) {
-          return false;
-        }
-        
-        // Include if it's easy to remove
-        return easyToRemoveItems.some(item => 
-          className.includes(item) || item.includes(className)
-        );
-      })
-      .map(obj => ({
-        name: obj.class,
-        confidence: (obj.score * 100).toFixed(1),
-        location: `${(obj.bbox[0]).toFixed(0)}, ${(obj.bbox[1]).toFixed(0)}`,
-        type: 'specific'
-      }));
+      .map(obj => categorizeClutter(obj.class, roomType, obj.bbox))
+      .filter(item => item !== null);
 
     // Add contextual general recommendations based on room type
     const generalRecommendations = [];
