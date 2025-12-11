@@ -17,34 +17,64 @@ function App() {
 
   const handleDetectionComplete = (objects) => {
     setDetectedObjects(objects);
-    // Show ALL detected objects in removal list, not just filtered ones
-    const allItems = objects.map(obj => ({
-      name: obj.class,
-      confidence: (obj.score * 100).toFixed(1),
-      location: `${(obj.bbox[0]).toFixed(0)}, ${(obj.bbox[1]).toFixed(0)}`
-    }));
-    setRemovalRecommendations(allItems);
+    // Filter for easily movable items, excluding large furniture
+    const recommendations = filterForRemoval(objects);
+    setRemovalRecommendations(recommendations);
   };
 
   const filterForRemoval = (objects) => {
-    // List of objects that should be removed for real estate photos
-    const removalList = [
-      'person', 'dog', 'cat', 'bird', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
-      'toy', 'teddy bear', 'kite', 'sports ball', 'baseball bat', 'skateboard', 'surfboard', 'tennis racket',
-      'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
-      'backpack', 'umbrella', 'handbag', 'tie', 'suitcase', 'frisbee',
-      'skis', 'snowboard', 'sports', 'ball', 'baseball', 'glove', 'skateboard',
-      // Items that may contain or represent paper/clutter
-      'book', 'laptop', 'cell phone', 'remote', 'keyboard', 'mouse', 'bottle', 'wine glass', 'cup',
-      'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot',
-      'hot dog', 'pizza', 'donut', 'cake', 'scissors', 'hair drier', 'toothbrush'
+    // ONLY easily movable clutter - exclude large furniture
+    const easyToRemoveItems = [
+      // People and pets (always remove)
+      'person', 'dog', 'cat', 'bird',
+      
+      // Personal belongings & clutter
+      'backpack', 'handbag', 'suitcase', 'umbrella', 'tie',
+      
+      // Electronics & devices (small, movable)
+      'cell phone', 'remote', 'laptop', 'keyboard', 'mouse',
+      
+      // Kitchen clutter (on counters/tables)
+      'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+      
+      // Food items (should not be visible)
+      'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+      
+      // Sports equipment (easily movable)
+      'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
+      
+      // Toys and small items
+      'teddy bear', 'kite', 'toy',
+      
+      // Small personal care items
+      'scissors', 'hair drier', 'toothbrush',
+      
+      // Books and papers
+      'book'
+    ];
+    
+    // Items to EXCLUDE (large furniture that should stay)
+    const furnitureToKeep = [
+      'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
+      'microwave', 'bench', 'potted plant', 'clock', 'vase'
     ];
 
     return objects
-      .filter(obj => removalList.some(item => 
-        obj.class.toLowerCase().includes(item) || 
-        item.includes(obj.class.toLowerCase())
-      ))
+      .filter(obj => {
+        const className = obj.class.toLowerCase();
+        
+        // Skip if it's furniture
+        if (furnitureToKeep.some(furniture => 
+          className.includes(furniture) || furniture.includes(className)
+        )) {
+          return false;
+        }
+        
+        // Include if it's easy to remove
+        return easyToRemoveItems.some(item => 
+          className.includes(item) || item.includes(className)
+        );
+      })
       .map(obj => ({
         name: obj.class,
         confidence: (obj.score * 100).toFixed(1),
