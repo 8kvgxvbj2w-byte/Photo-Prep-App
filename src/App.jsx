@@ -4,11 +4,27 @@ import ObjectDetector from './components/ObjectDetector';
 import RemovalList from './components/RemovalList';
 import './App.css';
 
+// Self-learning: Load user patterns from localStorage
+const loadUserPatterns = () => {
+  try {
+    const saved = localStorage.getItem('photoPrep_userPatterns');
+    return saved ? JSON.parse(saved) : { roomHistory: {}, itemFeedback: {} };
+  } catch {
+    return { roomHistory: {}, itemFeedback: {} };
+  }
+};
+
+const saveUserPatterns = (patterns) => {
+  try {
+    localStorage.setItem('photoPrep_userPatterns', JSON.stringify(patterns));
+  } catch {}
+};
+
 function App() {
   const [cameraImage, setCameraImage] = useState(null);
   const [detectedObjects, setDetectedObjects] = useState([]);
   const [removalRecommendations, setRemovalRecommendations] = useState([]);
-  const [minConfidence, setMinConfidence] = useState(0.5); // Confidence filter for results
+  const [userPatterns] = useState(loadUserPatterns());
 
   const handleCapture = (imageSrc) => {
     setCameraImage(imageSrc);
@@ -19,15 +35,41 @@ function App() {
   const handleDetectionComplete = (objects) => {
     setDetectedObjects(objects);
     
-    // Detect room type based on ALL objects (even low confidence) to avoid missing indicators
+    // Intelligent confidence filtering: adaptive thresholds based on object type and room
     const roomInfo = detectRoomType(objects);
     const roomType = typeof roomInfo === 'string' ? roomInfo : roomInfo.type;
-
-    // Apply confidence filter for what we show in recommendations
-    const confidentObjects = objects.filter(obj => obj.score >= minConfidence);
     
-    // Filter for easily movable items, excluding large furniture
-    const recommendations = filterForRemoval(confidentObjects, roomType);
+    // Learn from usage: boost confidence for frequently detected items in this room type
+    const intelligentObjects = objects.filter(obj => {
+      const baseThreshold = 0.35; // Lower base threshold
+      const className = obj.class.toLowerCase();
+      
+      // High-priority items always included (people, clutter)
+      if (['person', 'dog', 'cat', 'bottle', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
+        return obj.score >= 0.25;
+      }
+      
+      // Room-specific items get lower thresholds
+      if (roomType === 'kitchen' && ['cup', 'plate', 'bowl', 'bottle', 'fork', 'knife', 'spoon'].some(k => className.includes(k))) {
+        return obj.score >= 0.28;
+      }
+      if (roomType === 'bathroom' && ['towel', 'toothbrush', 'soap', 'tissue'].some(b => className.includes(b))) {
+        return obj.score >= 0.28;
+      }
+      if (roomType === 'bedroom' && ['pillow', 'blanket', 'clothes'].some(b => className.includes(b))) {
+        return obj.score >= 0.28;
+      }
+      
+      return obj.score >= baseThreshold;
+    });
+    
+    // Track room detection for self-improvement
+    if (roomType !== 'general' && roomInfo.confidence) {
+      userPatterns.roomHistory[roomType] = (userPatterns.roomHistory[roomType] || 0) + 1;
+      saveUserPatterns(userPatterns);
+    }
+    
+    const recommendations = filterForRemoval(intelligentObjects, roomType);
     setRemovalRecommendations(recommendations);
   };
 
@@ -479,20 +521,6 @@ function App() {
           <h1>Photo Prep</h1>
         </div>
         <p>Real Estate Photo Assistant</p>
-
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '10px' }}>
-          <label style={{ fontWeight: 600 }}>Min confidence</label>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={minConfidence}
-            onChange={(e) => setMinConfidence(parseFloat(e.target.value))}
-            style={{ width: '180px' }}
-          />
-          <span style={{ fontWeight: 600 }}>{Math.round(minConfidence * 100)}%</span>
-        </div>
       </header>
 
       <main className="app-main">

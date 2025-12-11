@@ -59,7 +59,8 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         await runDetection(model);
 
         async function runDetection(model) {
-          const MAX_DIMENSION = 1024; // Increased for better detail capture
+          // OPTIMIZED: Use 800px max dimension for faster processing without quality loss
+          const MAX_DIMENSION = 800;
           const scale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
           const targetWidth = Math.round(img.width * scale);
           const targetHeight = Math.round(img.height * scale);
@@ -73,71 +74,23 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           // Draw image without modifying lighting
           inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-          console.log('Running detection on image (scaled):', targetWidth, 'x', targetHeight, 'scale', scale.toFixed(3));
+          console.log('Running optimized detection:', targetWidth, 'x', targetHeight);
           
-          // Run detection with ENHANCED parameters for better accuracy
+          // SIMPLIFIED: Single-pass detection with optimized parameters for speed + accuracy
           let predictions = [];
           try {
             if (model.detect) {
-              console.log('Running intelligent multi-scale detection');
-              // ORIGINAL SCALE - Always detect at original scale first for comprehensive results
-              const pred1 = await model.detect(inputCanvas, 120, 0.12);
-              predictions = predictions.concat(pred1);
-              
-              // SMART SCALING DECISION: Only do additional scales for ambiguous cases
-              // Check if we have enough good detections for basic room identification
-              const topDetections = pred1.sort((a, b) => b.score - a.score).slice(0, 10);
-              const roomIndicatorStrength = analyzeRoomStrength(topDetections);
-              
-              console.log('Room indicator strength:', roomIndicatorStrength);
-              
-              // If room is unclear, run additional scales for better coverage
-              // Otherwise, use minimal scales to save time
-              if (roomIndicatorStrength < 20) {
-                console.log('Weak room detection - running additional scales for coverage');
-                
-                // UPSCALE for large objects
-                if (targetWidth * 1.3 < 1600) {
-                  const upscaleCanvas = document.createElement('canvas');
-                  upscaleCanvas.width = Math.round(targetWidth * 1.3);
-                  upscaleCanvas.height = Math.round(targetHeight * 1.3);
-                  const upscaleCtx = upscaleCanvas.getContext('2d');
-                  upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
-                  const pred2 = await model.detect(upscaleCanvas, 100, 0.12);
-                  pred2.forEach(p => {
-                    p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
-                  });
-                  predictions = predictions.concat(pred2);
-                }
-                
-                // DOWNSCALE for small distant objects
-                const downscaleCanvas = document.createElement('canvas');
-                downscaleCanvas.width = Math.round(targetWidth * 0.8);
-                downscaleCanvas.height = Math.round(targetHeight * 0.8);
-                const downscaleCtx = downscaleCanvas.getContext('2d');
-                downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
-                const pred3 = await model.detect(downscaleCanvas, 100, 0.12);
-                pred3.forEach(p => {
-                  p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
-                });
-                predictions = predictions.concat(pred3);
-              } else {
-                console.log('Strong room detection - using optimized single-scale for speed');
-                // Room is clear, use just the original scale for faster results
-              }
-              
-              // Merge duplicate detections from multiple scales
-              predictions = mergeDuplicateDetections(predictions);
-              console.log('After multi-scale merge:', predictions.length, 'unique objects');
+              // Single detection pass with balanced settings
+              predictions = await model.detect(inputCanvas, 100, 0.15);
+              console.log('Single-pass detection complete:', predictions.length, 'objects');
             } else if (model.estimateObjects) {
-              console.log('Using estimateObjects API');
               predictions = await model.estimateObjects(img);
             } else {
-              throw new Error('No detection method found on model. Available methods: ' + Object.keys(model).join(', '));
+              throw new Error('No detection method found on model');
             }
           } catch (methodErr) {
-            console.error('Detection method error:', methodErr);
-            throw new Error(`Detection method failed: ${methodErr.message}`);
+            console.error('Detection error:', methodErr);
+            throw new Error(`Detection failed: ${methodErr.message}`);
           }
           
           console.log('Predictions received:', predictions.length, 'objects');
@@ -209,48 +162,47 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'trash', 'garbage', 'box'
             ];
 
-            // Draw boxes for ALL items that need attention, with clear visual hierarchy
+            // Draw boxes ONLY for relevant items, skip low-confidence and furniture
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
-              const score = prediction.score.toFixed(3);
+              const score = prediction.score;
               const className = prediction.class.toLowerCase();
               
-              // Skip only major fixed furniture/appliances
+              // Skip furniture and very low confidence
               const isFurniture = furnitureToKeep.some(furniture => 
                 className.includes(furniture) || furniture.includes(className)
               );
               
-              if (isFurniture) {
-                return; // Don't draw boxes for fixed items
+              if (isFurniture || score < 0.25) {
+                return;
               }
               
-              // Check if it's a known removal item
+              // Check item categories
               const isKnownItem = easyToRemoveItems.some(item => 
                 className.includes(item) || item.includes(className)
               );
               
-              // Check if it's a high priority item
               const isHighPriority = highPriorityItems.some(item => 
                 className.includes(item) || item.includes(className)
               );
               
-              // Enhanced color coding with semi-transparent fill to show attention areas
+              // Simplified color coding for better visual clarity
               let boxColor, labelColor, lineWidth, fillColor;
               if (isHighPriority) {
-                boxColor = '#dc2626'; // Bright red for high priority
+                boxColor = '#dc2626';
                 labelColor = '#dc2626';
-                fillColor = 'rgba(220, 38, 38, 0.15)'; // Red tint
-                lineWidth = 4; // Thicker line
+                fillColor = 'rgba(220, 38, 38, 0.12)';
+                lineWidth = 3;
               } else if (isKnownItem) {
-                boxColor = '#2563eb'; // Blue for known items
+                boxColor = '#2563eb';
                 labelColor = '#2563eb';
-                fillColor = 'rgba(37, 99, 235, 0.1)'; // Blue tint
-                lineWidth = 3;
+                fillColor = 'rgba(37, 99, 235, 0.08)';
+                lineWidth = 2;
               } else {
-                boxColor = '#f97316'; // Orange for unknown clutter
+                boxColor = '#f97316';
                 labelColor = '#f97316';
-                fillColor = 'rgba(249, 115, 22, 0.12)'; // Orange tint
-                lineWidth = 3;
+                fillColor = 'rgba(249, 115, 22, 0.08)';
+                lineWidth = 2;
               }
 
               // Draw semi-transparent fill to highlight area
@@ -351,76 +303,6 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
       </div>
     </div>
   );
-}
-
-// Helper function: Merge duplicate detections from multiple scales
-function mergeDuplicateDetections(predictions) {
-  if (predictions.length === 0) return predictions;
-  
-  const merged = [];
-  const used = new Set();
-  
-  for (let i = 0; i < predictions.length; i++) {
-    if (used.has(i)) continue;
-    
-    const p1 = predictions[i];
-    let bestMatch = { index: i, overlap: 0, score: p1.score };
-    
-    // Find overlapping detections (likely duplicates from different scales)
-    for (let j = i + 1; j < predictions.length; j++) {
-      if (used.has(j)) continue;
-      
-      const p2 = predictions[j];
-      
-      // Same class name?
-      if (p1.class.toLowerCase() !== p2.class.toLowerCase()) continue;
-      
-      // Calculate IoU (Intersection over Union)
-      const [x1, y1, w1, h1] = p1.bbox;
-      const [x2, y2, w2, h2] = p2.bbox;
-      
-      const xIntersect = Math.max(0, Math.min(x1 + w1, x2 + w2) - Math.max(x1, x2));
-      const yIntersect = Math.max(0, Math.min(y1 + h1, y2 + h2) - Math.max(y1, y2));
-      const intersection = xIntersect * yIntersect;
-      const union = w1 * h1 + w2 * h2 - intersection;
-      const iou = union > 0 ? intersection / union : 0;
-      
-      // If significant overlap (>0.3), likely same object
-      if (iou > 0.3 && p2.score > bestMatch.score) {
-        bestMatch = { index: j, overlap: iou, score: p2.score };
-      }
-    }
-    
-    // Keep the higher confidence detection
-    const keepIndex = bestMatch.index;
-    merged.push(predictions[keepIndex]);
-    used.add(i);
-    used.add(keepIndex);
-  }
-  
-  return merged;
-}
-
-// Helper function: Analyze if detections contain strong room indicators
-function analyzeRoomStrength(detections) {
-  const kitchenStrong = ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher'];
-  const bathroomStrong = ['toilet', 'bathtub', 'shower'];
-  const bedroomStrong = ['bed'];
-  const livingRoomStrong = ['couch', 'sofa', 'tv'];
-
-  let strength = 0;
-  
-  detections.forEach(det => {
-    const className = det.class.toLowerCase();
-    
-    // Add points for strong indicators
-    if (kitchenStrong.concat(bathroomStrong).concat(bedroomStrong).concat(livingRoomStrong)
-      .some(indicator => className.includes(indicator))) {
-      strength += det.score * 10; // Weight by confidence
-    }
-  });
-  
-  return strength;
 }
 
 export default ObjectDetector;
