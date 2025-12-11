@@ -144,23 +144,40 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'flower', 'plant', 'flowers', 'bouquet'
             ];
 
-            // Draw boxes
+            // Furniture to exclude from highlighting
+            const furnitureToKeep = [
+              'chair', 'couch', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
+              'microwave', 'bench', 'potted plant', 'clock', 'vase', 'wall', 'door', 'window', 'ceiling',
+              'floor', 'curtain', 'lamp', 'light', 'table'
+            ];
+
+            // Draw boxes ONLY for items that should be removed
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
               const score = prediction.score.toFixed(3);
+              const className = prediction.class.toLowerCase();
+              
+              // Skip furniture items completely
+              const isFurniture = furnitureToKeep.some(furniture => 
+                className.includes(furniture) || furniture.includes(className)
+              );
+              
+              if (isFurniture) {
+                return; // Don't draw boxes for furniture
+              }
               
               // Check if it's a known removal item
               const isKnownItem = easyToRemoveItems.some(item => 
-                prediction.class.toLowerCase().includes(item) || item.includes(prediction.class.toLowerCase())
+                className.includes(item) || item.includes(className)
               );
               
-              // Use different colors for identified vs unidentified clutter
-              const boxColor = isKnownItem ? '#2563eb' : '#ef4444';  // Blue for identified, red for unidentified
+              // All non-furniture items get highlighted (known = blue, unknown = red)
+              const boxColor = isKnownItem ? '#2563eb' : '#ef4444';
               const labelColor = isKnownItem ? '#2563eb' : '#ef4444';
 
-              // Draw box with thicker line for unidentified items
+              // Draw box
               ctx.strokeStyle = boxColor;
-              ctx.lineWidth = isKnownItem ? 3 : 4;
+              ctx.lineWidth = 3;
               ctx.strokeRect(x, y, width, height);
 
               // Draw label background

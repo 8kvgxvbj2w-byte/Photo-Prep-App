@@ -29,29 +29,41 @@ function App() {
   const detectRoomType = (objects) => {
     const classes = objects.map(obj => obj.class.toLowerCase());
     
-    // Kitchen indicators
-    if (classes.some(c => ['oven', 'microwave', 'refrigerator', 'sink', 'toaster'].includes(c))) {
-      return 'kitchen';
-    }
+    // Count indicators for each room type for better confidence
+    const kitchenIndicators = ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher', 'toaster'];
+    const bathroomIndicators = ['toilet', 'bathtub', 'shower'];
+    const bedroomIndicators = ['bed'];
+    const livingRoomIndicators = ['couch', 'sofa', 'tv'];
+    const diningRoomIndicators = ['dining table'];
     
-    // Bathroom indicators
-    if (classes.some(c => ['toilet', 'sink'].includes(c)) && 
-        !classes.some(c => ['oven', 'refrigerator'].includes(c))) {
+    const kitchenScore = classes.filter(c => kitchenIndicators.includes(c)).length;
+    const bathroomScore = classes.filter(c => bathroomIndicators.includes(c)).length;
+    const bedroomScore = classes.filter(c => bedroomIndicators.includes(c)).length;
+    const livingRoomScore = classes.filter(c => livingRoomIndicators.includes(c)).length;
+    const diningRoomScore = classes.filter(c => diningRoomIndicators.includes(c)).length;
+    
+    // Strong bathroom detection (toilet is unique to bathrooms)
+    if (bathroomScore > 0) {
       return 'bathroom';
     }
     
-    // Bedroom indicators
-    if (classes.some(c => ['bed'].includes(c))) {
+    // Kitchen detection (needs at least 1 strong indicator)
+    if (kitchenScore > 0) {
+      return 'kitchen';
+    }
+    
+    // Bedroom detection
+    if (bedroomScore > 0) {
       return 'bedroom';
     }
     
-    // Living room indicators
-    if (classes.some(c => ['couch', 'tv', 'remote'].includes(c))) {
+    // Living room detection
+    if (livingRoomScore > 0) {
       return 'living room';
     }
     
-    // Dining room indicators
-    if (classes.some(c => ['dining table'].includes(c))) {
+    // Dining room detection
+    if (diningRoomScore > 0) {
       return 'dining room';
     }
     
@@ -188,69 +200,36 @@ function App() {
       .map(obj => categorizeClutter(obj.class, roomType, obj.bbox))
       .filter(item => item !== null);
 
-    // Add contextual general recommendations based on room type
+    // Only show contextual advice for confidently identified rooms
     const generalRecommendations = [];
     
-    if (roomType === 'kitchen') {
+    // Only add room-specific advice if we're confident about the room type
+    if (roomType === 'kitchen' && objects.some(obj => ['oven', 'microwave', 'refrigerator'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
         name: 'Clear all items off countertops',
-        confidence: '100',
+        confidence: '95',
         location: 'Kitchen surfaces',
         type: 'general'
       });
-      generalRecommendations.push({
-        name: 'Remove magnets and papers from refrigerator',
-        confidence: '100',
-        location: 'Refrigerator',
-        type: 'general'
-      });
-    } else if (roomType === 'bathroom') {
+    } else if (roomType === 'bathroom' && objects.some(obj => ['toilet'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
         name: 'Clear toiletries from countertops',
-        confidence: '100',
+        confidence: '95',
         location: 'Bathroom counter',
         type: 'general'
       });
+    } else if (roomType === 'bedroom' && objects.some(obj => ['bed'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Remove bath mats and towels',
-        confidence: '100',
-        location: 'Bathroom floor',
+        name: 'Clear nightstand and dresser surfaces',
+        confidence: '95',
+        location: 'Bedroom surfaces',
         type: 'general'
       });
-    } else if (roomType === 'bedroom') {
+    } else if (roomType === 'living room' && objects.some(obj => ['couch', 'sofa', 'tv'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Clear nightstand clutter',
-        confidence: '100',
-        location: 'Nightstand',
-        type: 'general'
-      });
-      generalRecommendations.push({
-        name: 'Remove personal items from dresser',
-        confidence: '100',
-        location: 'Dresser top',
-        type: 'general'
-      });
-    } else if (roomType === 'living room') {
-      generalRecommendations.push({
-        name: 'Clear coffee table surface',
-        confidence: '100',
-        location: 'Coffee table',
-        type: 'general'
-      });
-      generalRecommendations.push({
-        name: 'Remove excess throw pillows and blankets',
-        confidence: '100',
-        location: 'Seating area',
-        type: 'general'
-      });
-    }
-    
-    // Always add general clutter advice if room has any objects
-    if (objects.length > 0) {
-      generalRecommendations.push({
-        name: 'Remove visible clutter and personal items',
-        confidence: '100',
-        location: 'Throughout space',
+        name: 'Clear coffee table and side surfaces',
+        confidence: '95',
+        location: 'Living room surfaces',
         type: 'general'
       });
     }
