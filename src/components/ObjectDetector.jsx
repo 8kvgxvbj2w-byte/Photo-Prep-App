@@ -117,11 +117,14 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             const canvas = canvasRef.current;
             const ctx = canvas.getContext('2d');
             
+            // Set canvas to match the scaled image dimensions
             canvas.width = targetWidth;
             canvas.height = targetHeight;
+            
+            console.log('Drawing on canvas:', targetWidth, 'x', targetHeight);
 
-            // Draw scaled image
-            ctx.drawImage(inputCanvas, 0, 0);
+            // Draw scaled image to canvas
+            ctx.drawImage(inputCanvas, 0, 0, targetWidth, targetHeight);
 
             // Common removal items list for canvas highlighting
             const easyToRemoveItems = [
@@ -284,10 +287,13 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           )}
           
           {!isLoading && image && (
-            <canvas 
-              ref={canvasRef} 
-              className="detection-canvas"
-            />
+            <div style={{ width: '100%' }}>
+              <canvas 
+                ref={canvasRef} 
+                className="detection-canvas"
+                style={{ display: 'block', width: '100%' }}
+              />
+            </div>
           )}
 
           {!isLoading && detectedObjects.length > 0 && (
