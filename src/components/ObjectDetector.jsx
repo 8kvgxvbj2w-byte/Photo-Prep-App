@@ -104,14 +104,42 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             predictions.forEach(prediction => {
               const [x, y, width, height] = prediction.bbox;
               const score = prediction.score.toFixed(3);
+              
+              // Check if it's a known removal item
+              const easyToRemoveItems = [
+                'person', 'dog', 'cat', 'bird',
+                'backpack', 'handbag', 'suitcase', 'umbrella', 'tie',
+                'cell phone', 'remote', 'laptop', 'keyboard', 'mouse',
+                'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
+                'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware',
+                'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter',
+                'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+                'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
+                'teddy bear', 'kite', 'toy',
+                'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
+                'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain',
+                'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume',
+                'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine',
+                'bathroom accessories', 'toiletries', 'bath products', 'shower gel',
+                'scissors', 'book'
+              ];
+              
+              const isKnownItem = easyToRemoveItems.some(item => 
+                prediction.class.toLowerCase().includes(item) || item.includes(prediction.class.toLowerCase())
+              );
+              
+              // Use different colors for identified vs unidentified clutter
+              const isIdentified = isKnownItem;
+              const boxColor = isIdentified ? '#2563eb' : '#ef4444';  // Blue for identified, red for unidentified
+              const labelColor = isIdentified ? '#2563eb' : '#ef4444';
 
-              // Draw box
-              ctx.strokeStyle = '#2563eb';
-              ctx.lineWidth = 3;
+              // Draw box with thicker line for unidentified items
+              ctx.strokeStyle = boxColor;
+              ctx.lineWidth = isIdentified ? 3 : 4;
               ctx.strokeRect(x, y, width, height);
 
               // Draw label background
-              ctx.fillStyle = '#2563eb';
+              ctx.fillStyle = labelColor;
               const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
               const textWidth = ctx.measureText(text).width;
               ctx.fillRect(x, y - 24, textWidth + 12, 24);

@@ -65,34 +65,50 @@ function App() {
       'person', 'dog', 'cat', 'bird',
       
       // Personal belongings & clutter
-      'backpack', 'handbag', 'suitcase', 'umbrella', 'tie',
+      'backpack', 'handbag', 'suitcase', 'umbrella', 'tie', 'bag', 'purse', 'wallet', 'jacket', 'coat', 'sweater', 'shirt', 'pants', 'shoes',
       
       // Electronics & devices (small, movable)
-      'cell phone', 'remote', 'laptop', 'keyboard', 'mouse',
+      'cell phone', 'remote', 'laptop', 'keyboard', 'mouse', 'monitor', 'phone', 'tablet', 'ipad', 'computer', 'headphones', 'speaker', 'camera',
       
       // Kitchen clutter (on counters/tables) - dishes, cutlery, cups
-      'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl',
-      'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware',
-      'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter',
+      'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'pot', 'pan',
+      'plate', 'dish', 'glass', 'mug', 'utensil', 'cutlery', 'silverware', 'dinnerware',
+      'drinking glass', 'coffee cup', 'tea cup', 'saucer', 'platter', 'pitcher', 'kettle',
+      'container', 'jar', 'lid', 'cap', 'sauce', 'condiment', 'spice', 'seasoning',
       
       // Food items (should not be visible)
       'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
+      'food', 'fruit', 'vegetable', 'meat', 'bread', 'cheese', 'milk', 'drink',
       
       // Sports equipment (easily movable)
       'sports ball', 'baseball bat', 'tennis racket', 'frisbee', 'skateboard', 'surfboard', 'skis', 'snowboard',
+      'bicycle', 'bike', 'weights', 'dumbbell', 'yoga mat', 'exercise ball',
       
       // Toys and small items
-      'teddy bear', 'kite', 'toy',
+      'teddy bear', 'kite', 'toy', 'doll', 'game', 'puzzle', 'lego',
       
       // Bathroom items (toiletries, towels, personal care)
       'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics',
-      'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain',
-      'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume',
-      'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine',
-      'bathroom accessories', 'toiletries', 'bath products', 'shower gel',
+      'towel', 'face washer', 'washcloth', 'bath mat', 'shower curtain', 'bathroom mat',
+      'hair drier', 'hair dryer', 'brush', 'comb', 'razor', 'perfume', 'cologne',
+      'tissue', 'tissue box', 'cotton', 'makeup', 'deodorant', 'medicine', 'vitamins',
+      'bathroom accessories', 'toiletries', 'bath products', 'shower gel', 'body wash', 'moisturizer',
       
-      // Small personal care items
-      'scissors',
+      // Bedroom items
+      'pillow', 'blanket', 'sheet', 'comforter', 'bedspread', 'duvet', 'mattress', 'pillow case',
+      'nightstand', 'dresser', 'closet', 'wardrobe', 'hanger', 'shoe rack',
+      
+      // Living room items
+      'cushion', 'throw pillow', 'throw blanket', 'couch throw', 'ottoman', 'footstool',
+      
+      // General clutter
+      'scissors', 'pen', 'pencil', 'paper', 'document', 'mail', 'magazine',
+      'book', 'notebook', 'clipboard', 'folder', 'binder',
+      'box', 'container', 'basket', 'bag', 'pouch', 'case',
+      'picture', 'photo', 'poster', 'artwork', 'frame',
+      'candle', 'decoration', 'ornament', 'figurine', 'statue',
+      'flower', 'plant', 'flowers', 'bouquet'
+
       
       // Books and papers
       'book'
