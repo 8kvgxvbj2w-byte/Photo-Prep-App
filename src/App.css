@@ -44,14 +44,16 @@ body {
   width: 50px;
   height: 50px;
   filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.25));
+  flex-shrink: 0;
 }
 
 .app-header h1 {
-  font-size: 2.2rem;
+  font-size: 3.1rem;
   margin-bottom: 0;
   font-weight: 900;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
   font-family: 'Sora', sans-serif;
+  line-height: 1;
 }
 
 .app-header p {
