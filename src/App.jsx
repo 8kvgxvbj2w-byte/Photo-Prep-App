@@ -140,15 +140,39 @@ function App() {
         return null;
       }
       
-      // If it matches a known easy-to-remove item, return it as-is
+      // If it matches a known easy-to-remove item, return it with detailed reason
       if (easyToRemoveItems.some(item => 
         name.includes(item) || item.includes(name)
       )) {
+        let reason = '';
+        
+        // Provide specific reasons based on item type
+        if (['person', 'dog', 'cat', 'bird'].some(p => name.includes(p))) {
+          reason = 'Buyers focus on the space, not current occupants';
+        } else if (['bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug', 'fork', 'knife', 'spoon'].some(i => name.includes(i))) {
+          reason = 'Clear surfaces make kitchens look spacious and clean';
+        } else if (['towel', 'toothbrush', 'soap', 'shampoo', 'lotion', 'makeup', 'cosmetics'].some(i => name.includes(i))) {
+          reason = 'Bathrooms should look spa-like and depersonalized';
+        } else if (['pillow', 'blanket', 'sheet', 'clothes', 'jacket', 'shirt', 'pants', 'shoes'].some(i => name.includes(i))) {
+          reason = 'Bedrooms need minimal styling - less is more';
+        } else if (['laptop', 'phone', 'remote', 'keyboard', 'mouse', 'headphones'].some(i => name.includes(i))) {
+          reason = 'Electronics create visual clutter and distraction';
+        } else if (['book', 'paper', 'magazine', 'document', 'mail'].some(i => name.includes(i))) {
+          reason = 'Paper clutter makes spaces look busy and disorganized';
+        } else if (['toy', 'teddy bear', 'doll', 'game'].some(i => name.includes(i))) {
+          reason = 'Toys distract from the home\'s features';
+        } else if (['photo', 'picture', 'artwork', 'poster'].some(i => name.includes(i))) {
+          reason = 'Personal photos should be removed for neutral appeal';
+        } else {
+          reason = 'Creates visual clutter - clear for photos';
+        }
+        
         return {
           name: className,
           confidence: '100',
           location: `${(bbox[0]).toFixed(0)}, ${(bbox[1]).toFixed(0)}`,
-          type: 'specific'
+          type: 'specific',
+          reason: reason
         };
       }
       
@@ -203,34 +227,74 @@ function App() {
     // Only show contextual advice for confidently identified rooms
     const generalRecommendations = [];
     
-    // Only add room-specific advice if we're confident about the room type
+    // Add professional styling tips for each confidently identified room
     if (roomType === 'kitchen' && objects.some(obj => ['oven', 'microwave', 'refrigerator'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Clear all items off countertops',
-        confidence: '95',
-        location: 'Kitchen surfaces',
-        type: 'general'
+        name: '✨ Kitchen Styling Tips',
+        confidence: '100',
+        location: 'Kitchen',
+        type: 'styling',
+        tips: [
+          'Clear ALL items from countertops - show maximum counter space',
+          'Remove magnets, papers, and photos from refrigerator',
+          'Hide dish soap, sponges, and cleaning supplies',
+          'Put away small appliances (toaster, coffee maker, mixer)',
+          'Stage with a single bowl of fresh fruit or flowers',
+          'Ensure all cabinet doors are closed',
+          'Polish stainless steel appliances',
+          'Turn on under-cabinet lighting for warm ambiance'
+        ]
       });
     } else if (roomType === 'bathroom' && objects.some(obj => ['toilet'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Clear toiletries from countertops',
-        confidence: '95',
-        location: 'Bathroom counter',
-        type: 'general'
+        name: '✨ Bathroom Styling Tips',
+        confidence: '100',
+        location: 'Bathroom',
+        type: 'styling',
+        tips: [
+          'Remove ALL toiletries from counters and shower',
+          'Hide toothbrushes, soap, shampoo bottles',
+          'Remove bath mats and personal towels',
+          'Close toilet lid and shower curtain',
+          'Stage with 2-3 white fluffy towels, neatly folded',
+          'Add a small plant or candle for spa feel',
+          'Clean mirrors and fixtures until spotless',
+          'Ensure good lighting - turn on all lights'
+        ]
       });
     } else if (roomType === 'bedroom' && objects.some(obj => ['bed'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Clear nightstand and dresser surfaces',
-        confidence: '95',
-        location: 'Bedroom surfaces',
-        type: 'general'
+        name: '✨ Bedroom Styling Tips',
+        confidence: '100',
+        location: 'Bedroom',
+        type: 'styling',
+        tips: [
+          'Make bed with crisp, neutral linens',
+          'Remove ALL personal items from nightstands',
+          'Limit pillows to 4-6 decorative ones maximum',
+          'Clear dresser tops completely',
+          'Hide clothes, shoes, and personal belongings',
+          'Close closet doors (or style if walk-in)',
+          'Add symmetry with matching lamps',
+          'Keep floor clear - creates spacious feel'
+        ]
       });
     } else if (roomType === 'living room' && objects.some(obj => ['couch', 'sofa', 'tv'].includes(obj.class.toLowerCase()))) {
       generalRecommendations.push({
-        name: 'Clear coffee table and side surfaces',
-        confidence: '95',
-        location: 'Living room surfaces',
-        type: 'general'
+        name: '✨ Living Room Styling Tips',
+        confidence: '100',
+        location: 'Living room',
+        type: 'styling',
+        tips: [
+          'Clear coffee table except 1-2 styled items',
+          'Limit throw pillows to 3-4 per sofa',
+          'Remove excess blankets and personal items',
+          'Hide remotes, cables, and electronics',
+          'Arrange furniture to show flow and space',
+          'Add fresh flowers or greenery',
+          'Ensure adequate lighting - multiple sources',
+          'Create conversational seating arrangement'
+        ]
       });
     }
 

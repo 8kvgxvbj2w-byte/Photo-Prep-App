@@ -19,30 +19,38 @@ function RemovalList({ recommendations, totalDetected }) {
 
               <ul className="removal-items">
                 {recommendations.map((item, idx) => (
-                  <li key={idx} className="removal-item">
-                    <div className="item-header">
-                      <span className="item-name">{item.name}</span>
-                      <span className="item-confidence">{item.confidence}%</span>
-                    </div>
-                    {item.category && (
-                      <p className="item-category">{item.category}</p>
+                  <li key={idx} className={`removal-item ${item.type === 'styling' ? 'styling-tips-item' : ''}`}>
+                    {item.type === 'styling' ? (
+                      // Styling tips section
+                      <div className="styling-section">
+                        <div className="item-header">
+                          <span className="item-name styling-title">{item.name}</span>
+                        </div>
+                        <ul className="styling-tips-list">
+                          {item.tips.map((tip, tipIdx) => (
+                            <li key={tipIdx} className="styling-tip">{tip}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      // Regular removal item
+                      <>
+                        <div className="item-header">
+                          <span className="item-name">{item.name}</span>
+                          <span className="item-confidence">{item.confidence}%</span>
+                        </div>
+                        {item.reason && (
+                          <p className="item-reason">💡 {item.reason}</p>
+                        )}
+                        {item.category && (
+                          <p className="item-category">{item.category}</p>
+                        )}
+                        <p className="item-location">Location: ({item.location})</p>
+                      </>
                     )}
-                    <p className="item-location">Location: ({item.location})</p>
                   </li>
                 ))}
               </ul>
-
-              <div className="tips">
-                <h3>💡 Tips for Real Estate Photos</h3>
-                <ul>
-                  <li>Remove personal items (photos, awards, decorations)</li>
-                  <li>Clear clutter and extra furniture</li>
-                  <li>Remove pets or ensure they're not visible</li>
-                  <li>Hide sports equipment and outdoor gear</li>
-                  <li>Take photos during daylight hours</li>
-                  <li>Use neutral styling for maximum appeal</li>
-                </ul>
-              </div>
             </>
           ) : (
             <div className="empty-state">
