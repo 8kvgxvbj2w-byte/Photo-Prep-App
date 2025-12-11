@@ -19,7 +19,8 @@ function App() {
     setDetectedObjects(objects);
     
     // Detect room type based on objects
-    const roomType = detectRoomType(objects);
+    const roomInfo = detectRoomType(objects);
+    const roomType = typeof roomInfo === 'string' ? roomInfo : roomInfo.type;
     
     // Filter for easily movable items, excluding large furniture
     const recommendations = filterForRemoval(objects, roomType);

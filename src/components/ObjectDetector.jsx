@@ -67,9 +67,8 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           inputCanvas.height = targetHeight;
           const inputCtx = inputCanvas.getContext('2d');
           
-          // Draw and enhance image for better recognition
+          // Draw image without modifying lighting
           inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          enhanceImageContrast(inputCtx, targetWidth, targetHeight);
 
           console.log('Running detection on image (scaled):', targetWidth, 'x', targetHeight, 'scale', scale.toFixed(3));
           
@@ -79,7 +78,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
             if (model.detect) {
               console.log('Running intelligent multi-scale detection');
               // ORIGINAL SCALE - Always detect at original scale first for comprehensive results
-              const pred1 = await model.detect(inputCanvas, 200, 0.08);
+              const pred1 = await model.detect(inputCanvas, 150, 0.12);
               predictions = predictions.concat(pred1);
               
               // SMART SCALING DECISION: Only do additional scales for ambiguous cases
@@ -101,7 +100,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                   upscaleCanvas.height = Math.round(targetHeight * 1.3);
                   const upscaleCtx = upscaleCanvas.getContext('2d');
                   upscaleCtx.drawImage(inputCanvas, 0, 0, upscaleCanvas.width, upscaleCanvas.height);
-                  const pred2 = await model.detect(upscaleCanvas, 150, 0.08);
+                  const pred2 = await model.detect(upscaleCanvas, 120, 0.12);
                   pred2.forEach(p => {
                     p.bbox = [p.bbox[0] / 1.3, p.bbox[1] / 1.3, p.bbox[2] / 1.3, p.bbox[3] / 1.3];
                   });
@@ -114,7 +113,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
                 downscaleCanvas.height = Math.round(targetHeight * 0.8);
                 const downscaleCtx = downscaleCanvas.getContext('2d');
                 downscaleCtx.drawImage(inputCanvas, 0, 0, downscaleCanvas.width, downscaleCanvas.height);
-                const pred3 = await model.detect(downscaleCanvas, 150, 0.08);
+                const pred3 = await model.detect(downscaleCanvas, 120, 0.12);
                 pred3.forEach(p => {
                   p.bbox = [p.bbox[0] / 0.8, p.bbox[1] / 0.8, p.bbox[2] / 0.8, p.bbox[3] / 0.8];
                 });
@@ -348,47 +347,6 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
       </div>
     </div>
   );
-}
-
-// Helper function: Enhance image contrast for better object detection
-function enhanceImageContrast(ctx, width, height) {
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const data = imageData.data;
-  
-  // Histogram equalization: Improve contrast
-  // Calculate histogram
-  const histogram = new Array(256).fill(0);
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
-    histogram[Math.floor(gray)]++;
-  }
-  
-  // Calculate cumulative distribution function
-  const cdf = new Array(256).fill(0);
-  cdf[0] = histogram[0];
-  for (let i = 1; i < 256; i++) {
-    cdf[i] = cdf[i-1] + histogram[i];
-  }
-  
-  // Normalize CDF
-  const cdfMin = cdf.find(v => v > 0);
-  const totalPixels = width * height;
-  for (let i = 0; i < 256; i++) {
-    cdf[i] = Math.round(((cdf[i] - cdfMin) / (totalPixels - cdfMin)) * 255);
-  }
-  
-  // Apply histogram equalization
-  for (let i = 0; i < data.length; i += 4) {
-    const gray = (data[i] + data[i+1] + data[i+2]) / 3;
-    const newValue = cdf[Math.floor(gray)];
-    // Boost contrast while maintaining colors
-    const factor = newValue / Math.max(gray, 1);
-    data[i] = Math.min(255, data[i] * factor * 0.9); // R
-    data[i+1] = Math.min(255, data[i+1] * factor * 0.9); // G
-    data[i+2] = Math.min(255, data[i+2] * factor * 0.9); // B
-  }
-  
-  ctx.putImageData(imageData, 0, 0);
 }
 
 // Helper function: Merge duplicate detections from multiple scales
