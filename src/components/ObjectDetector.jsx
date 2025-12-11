@@ -11,12 +11,21 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
   const imgRef = useRef(null);
   const canvasRef = useRef(null);
   const detectingRef = useRef(false); // prevent overlapping detections
+  const onDetectionCompleteRef = useRef(onDetectionComplete);
+  
+  // Keep callback ref updated
+  useEffect(() => {
+    onDetectionCompleteRef.current = onDetectionComplete;
+  }, [onDetectionComplete]);
 
   useEffect(() => {
     if (!image) return;
 
     const detectObjects = async () => {
-      if (detectingRef.current) return; // avoid duplicate runs (e.g., from double renders)
+      if (detectingRef.current) {
+        console.log('Detection already in progress, skipping');
+        return;
+      }
       detectingRef.current = true;
       setIsLoading(true);
       setError(null);
@@ -101,7 +110,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
           // Sort by confidence
           predictions.sort((a, b) => b.score - a.score);
 
-          onDetectionComplete(predictions);
+          onDetectionCompleteRef.current(predictions);
 
           // Draw bounding boxes
           if (canvasRef.current) {
@@ -239,7 +248,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
     };
 
     detectObjects();
-  }, [image, onDetectionComplete]);
+  }, [image]); // Only re-run when image changes, not on callback changes
 
   return (
     <div className="object-detector">
