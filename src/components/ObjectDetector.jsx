@@ -184,7 +184,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'trash', 'garbage', 'box'
             ];
 
-            // Draw boxes ONLY for relevant items, skip low-confidence and furniture
+            // Draw boxes ONLY for clutter items that we recommend removing
             predictions.forEach(prediction => {
               // Scale bbox coordinates from detection scale back to full image resolution
               let [x, y, width, height] = prediction.bbox;
@@ -196,13 +196,12 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               const score = prediction.score;
               const className = prediction.class.toLowerCase();
               
-              // Skip furniture only - draw everything else that's detected
+              // Skip furniture; we never highlight fixed items
               const isFurniture = furnitureToKeep.some(furniture => 
                 className.includes(furniture) || furniture.includes(className)
               );
               
-              // Draw ALL detected items except furniture, regardless of confidence
-              if (isFurniture) {
+              if (isFurniture || score < 0.12) {
                 return;
               }
               
@@ -214,6 +213,11 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               const isHighPriority = highPriorityItems.some(item => 
                 className.includes(item) || item.includes(className)
               );
+
+              // Only highlight items we would recommend removing
+              if (!isHighPriority && !isKnownItem) {
+                return;
+              }
               
               // Color coding: prioritize what should be removed
               let boxColor, fillColor, lineWidth;
