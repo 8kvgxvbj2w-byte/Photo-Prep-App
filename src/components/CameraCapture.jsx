@@ -5,19 +5,26 @@ function CameraCapture({ onCapture, image }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
 
   const startCamera = async () => {
     try {
+      setCameraError(null);
+      console.log('Starting camera...');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
+      console.log('Camera stream acquired:', stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        console.log('Video ref set, playing...');
         setIsCameraActive(true);
       }
     } catch (err) {
-      alert('Unable to access camera. Please check permissions.');
-      console.error(err);
+      console.error('Camera error:', err);
+      const errorMsg = `Camera Error: ${err.name} - ${err.message}`;
+      setCameraError(errorMsg);
+      alert('Unable to access camera. Please check permissions.\n\n' + errorMsg);
     }
   };
 
@@ -63,6 +70,18 @@ function CameraCapture({ onCapture, image }) {
         
         {!image ? (
           <>
+            {cameraError && (
+              <div style={{ 
+                padding: '10px', 
+                backgroundColor: '#ffebee', 
+                color: '#c62828', 
+                borderRadius: '4px', 
+                marginBottom: '10px',
+                fontSize: '12px'
+              }}>
+                {cameraError}
+              </div>
+            )}
             {!isCameraActive ? (
               <div className="camera-placeholder">
                 <p>Ready to capture your room</p>
