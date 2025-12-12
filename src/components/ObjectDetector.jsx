@@ -193,7 +193,8 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'towel', 'toothbrush', 'toilet paper', 'tissue',
               'cell phone', 'laptop', 'remote', 'keyboard', 'mouse',
               'book', 'paper', 'magazine', 'mail', 'document',
-              'clothes', 'clothing', 'shirt', 'pants', 'jacket', 'shoes',
+              'clothes', 'clothing', 'shirt', 'pants', 'jacket', 
+              'shoes', 'shoe', 'sneakers', 'boots', 'sandals', 'slippers', 'footwear',
               'bag', 'backpack', 'purse', 'handbag',
               'trash', 'garbage', 'box'
             ];

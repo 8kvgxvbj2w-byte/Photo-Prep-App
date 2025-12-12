@@ -169,7 +169,8 @@ function App() {
       'dog', 'cat', 'bird', 'pet', 'animal',
       
       // Personal belongings & clutter
-      'backpack', 'handbag', 'suitcase', 'umbrella', 'tie', 'bag', 'purse', 'wallet', 'jacket', 'coat', 'sweater', 'shirt', 'pants', 'shoes',
+      'backpack', 'handbag', 'suitcase', 'umbrella', 'tie', 'bag', 'purse', 'wallet', 'jacket', 'coat', 'sweater', 'shirt', 'pants', 
+      'shoes', 'shoe', 'sneakers', 'sneaker', 'boots', 'boot', 'sandals', 'sandal', 'slippers', 'slipper', 'footwear',
       'briefcase', 'luggage', 'duffel bag', 'tote bag', 'shoulder bag', 'crossbody bag', 'messenger bag',
       'scarf', 'hat', 'cap', 'beanie', 'gloves', 'socks', 'underwear',
       'vest', 'hoodie', 'sweatshirt', 'cardigan', 'blazer', 'dress', 'skirt', 'shorts', 'jeans',
@@ -333,8 +334,8 @@ function App() {
         } else if (['towel', 'toothbrush', 'soap', 'shampoo', 'lotion', 'makeup', 'cosmetics'].some(i => name.includes(i))) {
           reason = 'Bathrooms should look spa-like and depersonalized';
           category = 'mess';
-        } else if (['pillow', 'blanket', 'sheet', 'clothes', 'jacket', 'shirt', 'pants', 'shoes'].some(i => name.includes(i))) {
-          reason = 'Bedrooms need minimal styling - less is more';
+        } else if (['pillow', 'blanket', 'sheet', 'clothes', 'jacket', 'shirt', 'pants', 'shoes', 'shoe', 'sneakers', 'boots', 'sandals', 'slippers', 'footwear'].some(i => name.includes(i))) {
+          reason = 'Bedrooms and entryways should be clutter-free - hide all footwear';
           category = 'mess';
         } else if (['laptop', 'phone', 'remote', 'keyboard', 'mouse', 'headphones'].some(i => name.includes(i))) {
           reason = 'Electronics create visual clutter and distraction';
