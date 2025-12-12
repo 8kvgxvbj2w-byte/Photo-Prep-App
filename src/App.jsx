@@ -47,12 +47,12 @@ function App() {
       const className = obj.class.toLowerCase();
       
       // High-priority items always included (people, clutter)
-      if (['person', 'dog', 'cat', 'bottle', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
+      if (['person', 'dog', 'cat', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
         return obj.score >= 0.12;
       }
       
       // Room-specific items get lower thresholds
-      if (roomType === 'kitchen' && ['cup', 'plate', 'bowl', 'bottle', 'fork', 'knife', 'spoon'].some(k => className.includes(k))) {
+      if (roomType === 'kitchen' && ['cup', 'plate', 'bowl', 'fork', 'knife', 'spoon'].some(k => className.includes(k))) {
         return obj.score >= 0.12;
       }
       if (roomType === 'bathroom' && ['towel', 'toothbrush', 'soap', 'tissue'].some(b => className.includes(b))) {
@@ -84,7 +84,7 @@ function App() {
     // ENHANCED room indicators with more specific patterns
     const kitchenIndicators = {
       strong: ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher', 'sink', 'countertop'], // 5 points each
-      medium: ['toaster', 'kettle', 'pot', 'pan', 'glass', 'cup', 'plate', 'bowl', 'dish', 'bottle', 'fork', 'spoon', 'knife'], // 2 points each
+      medium: ['toaster', 'kettle', 'pot', 'pan', 'glass', 'cup', 'plate', 'bowl', 'dish', 'fork', 'spoon', 'knife'], // 2 points each
       weak: ['table', 'chair', 'cabinet', 'drawer', 'light'] // 0.5 points each
     };
     
