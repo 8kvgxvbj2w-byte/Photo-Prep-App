@@ -84,7 +84,7 @@ function App() {
     // ENHANCED room indicators with more specific patterns
     const kitchenIndicators = {
       strong: ['oven', 'microwave', 'refrigerator', 'stove', 'dishwasher', 'sink', 'countertop'], // 5 points each
-      medium: ['toaster', 'kettle', 'pot', 'pan', 'glass', 'cup', 'plate', 'bowl', 'dish', 'fork', 'spoon', 'knife'], // 2 points each
+      medium: ['toaster', 'kettle', 'pot', 'pan', 'glass', 'cup', 'plate', 'bowl', 'dish', 'fork', 'spoon', 'knife', 'towel'], // 2 points each
       weak: ['table', 'chair', 'cabinet', 'drawer', 'light'] // 0.5 points each
     };
     
@@ -269,7 +269,7 @@ function App() {
       
       // Bathroom items (toiletries, towels, personal care)
       'toothbrush', 'toothpaste', 'shampoo', 'soap', 'lotion', 'cosmetics', 'makeup',
-      'towel', 'bath towel', 'hand towel', 'washcloth', 'face washer', 'bath mat', 'shower curtain', 'bathroom mat', 'rug',
+      'towel', 'bath towel', 'hand towel', 'tea towel', 'kitchen towel', 'dish towel', 'washcloth', 'face washer', 'bath mat', 'shower curtain', 'bathroom mat', 'rug',
       'hair drier', 'hair dryer', 'blow dryer', 'brush', 'comb', 'hair brush', 'paddle brush',
       'razor', 'safety razor', 'perfume', 'cologne', 'deodorant', 'antiperspirant',
       'tissue', 'tissue box', 'cotton', 'cotton ball', 'cotton pad', 'q-tip', 'qtip',
@@ -390,8 +390,15 @@ function App() {
         } else if (['bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug', 'fork', 'knife', 'spoon'].some(i => name.includes(i))) {
           reason = 'Clear surfaces make kitchens look spacious and clean';
           category = 'mess';
-        } else if (['towel', 'toothbrush', 'soap', 'shampoo', 'lotion', 'makeup', 'cosmetics'].some(i => name.includes(i))) {
-          reason = 'Bathrooms should look spa-like and depersonalized';
+        } else if (['towel', 'tea towel', 'kitchen towel', 'dish towel', 'toothbrush', 'soap', 'shampoo', 'lotion', 'makeup', 'cosmetics'].some(i => name.includes(i))) {
+          const isTowel = ['towel', 'tea towel', 'kitchen towel', 'dish towel'].some(t => name.includes(t));
+          if (isTowel && roomType === 'kitchen') {
+            reason = 'Tea towels should be hidden away - shows clean counters for photos';
+          } else if (isTowel) {
+            reason = 'Towels create clutter - hide for staging';
+          } else {
+            reason = 'Bathrooms should look spa-like and depersonalized';
+          }
           category = 'mess';
         } else if (['pillow', 'blanket', 'sheet', 'clothes', 'jacket', 'shirt', 'pants', 'shoes', 'shoe', 'sneakers', 'boots', 'sandals', 'slippers', 'footwear'].some(i => name.includes(i))) {
           reason = 'Bedrooms and entryways should be clutter-free - hide all footwear';
