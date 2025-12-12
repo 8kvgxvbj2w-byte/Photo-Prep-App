@@ -111,6 +111,19 @@ function App() {
       medium: ['plate', 'glass', 'fork', 'knife', 'spoon', 'napkin', 'centerpiece'], // 2 points each
       weak: ['table', 'chandelier', 'wall', 'window'] // 0.5 points each
     };
+
+    // New: Office/Study and Laundry indicators
+    const officeIndicators = {
+      strong: ['desk', 'computer', 'laptop', 'monitor', 'keyboard'],
+      medium: ['mouse', 'printer', 'notebook', 'paper', 'document', 'bookshelf'],
+      weak: ['chair', 'lamp']
+    };
+
+    const laundryIndicators = {
+      strong: ['washer', 'dryer', 'laundry basket'],
+      medium: ['detergent', 'bleach', 'ironing board', 'iron'],
+      weak: ['shelf', 'cabinet']
+    };
     
     // Calculate weighted scores
     let scores = {
@@ -118,7 +131,9 @@ function App() {
       bathroom: 0,
       bedroom: 0,
       'living room': 0,
-      'dining room': 0
+      'dining room': 0,
+      office: 0,
+      laundry: 0
     };
     
     classes.forEach(c => {
@@ -146,6 +161,16 @@ function App() {
       if (diningRoomIndicators.strong.some(k => c.includes(k))) scores['dining room'] += 5;
       else if (diningRoomIndicators.medium.some(k => c.includes(k))) scores['dining room'] += 2;
       else if (diningRoomIndicators.weak.some(k => c.includes(k))) scores['dining room'] += 0.5;
+
+      // Office/Study
+      if (officeIndicators.strong.some(k => c.includes(k))) scores.office += 5;
+      else if (officeIndicators.medium.some(k => c.includes(k))) scores.office += 2;
+      else if (officeIndicators.weak.some(k => c.includes(k))) scores.office += 0.5;
+
+      // Laundry
+      if (laundryIndicators.strong.some(k => c.includes(k))) scores.laundry += 5;
+      else if (laundryIndicators.medium.some(k => c.includes(k))) scores.laundry += 2;
+      else if (laundryIndicators.weak.some(k => c.includes(k))) scores.laundry += 0.5;
     });
     
     // Find room with highest score
@@ -153,8 +178,11 @@ function App() {
       .sort((a, b) => b[1] - a[1])
       .map(([type, score]) => ({ type, score }));
     
-    // Return highest if it significantly outscores others
-    if (sorted[0].score > sorted[1].score * 1.5 && sorted[0].score >= 5) {
+    // Return highest if it significantly outscores others (improved margin logic)
+    const best = sorted[0];
+    const second = sorted[1] || { type: 'general', score: 0 };
+    const margin = best.score - second.score;
+    if ((best.score >= 6 && margin >= 3) || (best.score >= 8)) {
       return { type: sorted[0].type, confidence: sorted[0].score, allScores: scores };
     }
     
