@@ -178,15 +178,35 @@ function App() {
       .sort((a, b) => b[1] - a[1])
       .map(([type, score]) => ({ type, score }));
     
-    // Return highest if it significantly outscores others (improved margin logic)
-    const best = sorted[0];
-    const second = sorted[1] || { type: 'general', score: 0 };
-    const margin = best.score - second.score;
-    if ((best.score >= 6 && margin >= 3) || (best.score >= 8)) {
-      return { type: sorted[0].type, confidence: sorted[0].score, allScores: scores };
-    }
+      // Build evidence for confidence (which specific objects contributed)
+      const evidence = {
+        kitchen: [], bathroom: [], bedroom: [], 'living room': [], 'dining room': [], office: [], laundry: []
+      };
+      classes.forEach(c => {
+        // helper to push
+        const pushIf = (room, list, weight) => {
+          if (list.some(k => c.includes(k))) evidence[room].push({ item: c, weight });
+        };
+        pushIf('kitchen', kitchenIndicators.strong, 5); pushIf('kitchen', kitchenIndicators.medium, 2); pushIf('kitchen', kitchenIndicators.weak, 0.5);
+        pushIf('bathroom', bathroomIndicators.strong, 5); pushIf('bathroom', bathroomIndicators.medium, 2); pushIf('bathroom', bathroomIndicators.weak, 0.5);
+        pushIf('bedroom', bedroomIndicators.strong, 5); pushIf('bedroom', bedroomIndicators.medium, 2); pushIf('bedroom', bedroomIndicators.weak, 0.5);
+        pushIf('living room', livingRoomIndicators.strong, 5); pushIf('living room', livingRoomIndicators.medium, 2); pushIf('living room', livingRoomIndicators.weak, 0.5);
+        pushIf('dining room', diningRoomIndicators.strong, 5); pushIf('dining room', diningRoomIndicators.medium, 2); pushIf('dining room', diningRoomIndicators.weak, 0.5);
+        if (typeof officeIndicators !== 'undefined') { pushIf('office', officeIndicators.strong, 5); pushIf('office', officeIndicators.medium, 2); pushIf('office', officeIndicators.weak, 0.5); }
+        if (typeof laundryIndicators !== 'undefined') { pushIf('laundry', laundryIndicators.strong, 5); pushIf('laundry', laundryIndicators.medium, 2); pushIf('laundry', laundryIndicators.weak, 0.5); }
+      });
+
+      const best = sorted[0];
+      const second = sorted[1] || { type: 'general', score: 0 };
+      const margin = best.score - second.score;
+      const evidenceWeight = (evidence[best.type] || []).reduce((s, e) => s + e.weight, 0);
+      const confidence = Math.min(100, Math.round(best.score * 10 + margin * 5 + evidenceWeight * 4));
+      const isConfident = (best.score >= 6 && margin >= 2) || best.score >= 8;
     
-    return { type: 'general', confidence: 0, allScores: scores };
+      if (isConfident) {
+        return { type: best.type, confidence, allScores: scores, evidence };
+      }
+      return { type: 'general', confidence: 0, allScores: scores, evidence };
   };
 
   const filterForRemoval = (objects, roomType) => {
@@ -557,6 +577,33 @@ function App() {
         location: 'Living room',
         type: 'styling',
         tips
+      });
+    } else if (roomType === 'office') {
+      generalRecommendations.push({
+        name: 'Office/Study Staging Tips',
+        confidence: '100',
+        location: 'Office/Study',
+        type: 'styling',
+        tips: [
+          'Hide paperwork and cables; keep desk surfaces clear',
+          'Remove excess monitors and accessories',
+          'Stage with one laptop and a lamp for a clean look',
+          'Tidy bookshelf; limit to a few styled items',
+          'Ensure good lighting; remove visual clutter'
+        ]
+      });
+    } else if (roomType === 'laundry') {
+      generalRecommendations.push({
+        name: 'Laundry Room Staging Tips',
+        confidence: '100',
+        location: 'Laundry',
+        type: 'styling',
+        tips: [
+          'Hide detergents, bleach, and cleaning products',
+          'Remove laundry baskets and visible clothes',
+          'Clear counter surfaces; wipe machines for a spotless look',
+          'Add a small plant or folded white towels for accent'
+        ]
       });
     } else {
       // Generic tips for unidentified rooms
