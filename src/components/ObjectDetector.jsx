@@ -238,22 +238,37 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               }
               
               // Color coding: prioritize what should be removed
-              let boxColor, fillColor, lineWidth;
+              let boxColor, fillColor, lineWidth, shadowColor;
               if (isHighPriority) {
-                // High priority items - bright red, thick border
-                boxColor = '#ef4444';
-                fillColor = 'rgba(239, 68, 68, 0.25)';
-                lineWidth = 5;
+                // High priority items - BRIGHT RED, very thick border, glow effect
+                boxColor = '#dc2626';
+                fillColor = 'rgba(220, 38, 38, 0.35)';
+                lineWidth = 8;
+                shadowColor = 'rgba(220, 38, 38, 0.6)';
               } else if (isKnownItem) {
                 // Known removal items - blue
-                boxColor = '#3b82f6';
-                fillColor = 'rgba(59, 130, 246, 0.15)';
-                lineWidth = 3;
+                boxColor = '#2563eb';
+                fillColor = 'rgba(37, 99, 235, 0.2)';
+                lineWidth = 4;
+                shadowColor = 'rgba(37, 99, 235, 0.3)';
               } else {
                 // Unknown items - orange, draw for review
                 boxColor = '#f97316';
                 fillColor = 'rgba(249, 115, 22, 0.15)';
                 lineWidth = 2;
+                shadowColor = 'rgba(249, 115, 22, 0.2)';
+              }
+
+              // Draw glow/shadow effect for high priority
+              if (isHighPriority) {
+                ctx.strokeStyle = shadowColor;
+                ctx.lineWidth = lineWidth + 4;
+                ctx.shadowColor = boxColor;
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.strokeRect(x - 2, y - 2, width + 4, height + 4);
+                ctx.shadowColor = 'transparent';
               }
 
               // Draw semi-transparent fill to highlight area
@@ -265,18 +280,19 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               ctx.lineWidth = lineWidth;
               ctx.strokeRect(x, y, width, height);
 
-              // Draw label background with item name
+              // Draw label background with item name - larger for high priority
               ctx.fillStyle = boxColor;
               const text = `${prediction.class} ${(score * 100).toFixed(0)}%`;
-              ctx.font = 'bold 18px Arial';
+              const fontSize = isHighPriority ? 20 : 18;
+              ctx.font = `bold ${fontSize}px Arial`;
               const textWidth = ctx.measureText(text).width;
-              const labelHeight = 32;
+              const labelHeight = isHighPriority ? 40 : 32;
               ctx.fillRect(x, y - labelHeight, textWidth + 16, labelHeight);
               
               // Draw label text
               ctx.fillStyle = 'white';
-              ctx.font = 'bold 18px Arial';
-              ctx.fillText(text, x + 8, y - 9);
+              ctx.font = `bold ${fontSize}px Arial`;
+              ctx.fillText(text, x + 8, y - (isHighPriority ? 12 : 9));
               
               console.log(`Drawing box for ${className} (${score.toFixed(2)}) at [${x.toFixed(0)}, ${y.toFixed(0)}]`);
             });
