@@ -46,8 +46,8 @@ function App() {
       const baseThreshold = 0.15; // Lowered to catch more valid detections
       const className = obj.class.toLowerCase();
       
-      // High-priority items always included (people, clutter)
-      if (['person', 'dog', 'cat', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
+      // High-priority items always included (clutter)
+      if (['dog', 'cat', 'cup', 'bowl', 'phone', 'laptop'].some(p => className.includes(p))) {
         return obj.score >= 0.12;
       }
       
@@ -223,8 +223,7 @@ function App() {
   const filterForRemoval = (objects, roomType) => {
     // ONLY easily movable clutter - exclude large furniture
     const easyToRemoveItems = [
-      // People and pets (always remove)
-      'person', 'people', 'human', 'man', 'woman', 'child', 'kid', 'baby',
+      // Pets (always remove)
       'dog', 'cat', 'bird', 'pet', 'animal',
       
       // Personal belongings & clutter
@@ -384,8 +383,8 @@ function App() {
         let category = 'clutter';
         
         // Provide specific reasons based on item type
-        if (['person', 'dog', 'cat', 'bird'].some(p => name.includes(p))) {
-          reason = 'Buyers focus on the space, not current occupants';
+        if (['dog', 'cat', 'bird'].some(p => name.includes(p))) {
+          reason = 'Remove pets from photos for neutral appeal';
           category = 'occupant';
         } else if (['bottle', 'cup', 'bowl', 'plate', 'dish', 'glass', 'mug', 'fork', 'knife', 'spoon'].some(i => name.includes(i))) {
           reason = 'Clear surfaces make kitchens look spacious and clean';
