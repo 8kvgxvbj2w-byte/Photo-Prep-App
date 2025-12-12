@@ -201,10 +201,21 @@ function App() {
       const margin = best.score - second.score;
       const evidenceWeight = (evidence[best.type] || []).reduce((s, e) => s + e.weight, 0);
       const confidence = Math.min(100, Math.round(best.score * 10 + margin * 5 + evidenceWeight * 4));
-      const isConfident = (best.score >= 6 && margin >= 2) || best.score >= 8;
-    
+
+      // Sanity rules to prevent kitchen misclassification in bedrooms/offices
+      const strongCount = (room) => (evidence[room] || []).filter(e => e.weight === 5).length;
+      const hasKitchenStrong = strongCount('kitchen') > 0;
+      const hasSecondStrong = strongCount(second.type) > 0;
+
+      let finalType = best.type;
+      // If kitchen wins without any strong kitchen evidence and runner-up has strong evidence, prefer runner-up
+      if (best.type === 'kitchen' && !hasKitchenStrong && hasSecondStrong) {
+        finalType = second.type;
+      }
+
+      const isConfident = (scores[finalType] >= 6 && (scores[finalType] - second.score) >= 2) || scores[finalType] >= 8;
       if (isConfident) {
-        return { type: best.type, confidence, allScores: scores, evidence };
+        return { type: finalType, confidence, allScores: scores, evidence };
       }
       return { type: 'general', confidence: 0, allScores: scores, evidence };
   };
