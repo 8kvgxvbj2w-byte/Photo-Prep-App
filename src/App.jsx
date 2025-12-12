@@ -270,20 +270,44 @@ function App() {
       'rug', 'mat', 'carpet'
     ];
     
-    // Items to EXCLUDE (only major fixed furniture/appliances that should stay)
-    const furnitureToKeep = [
-      'couch', 'sofa', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
-      'microwave', 'wall', 'door', 'window', 'ceiling', 'floor'
+    // Items to EXCLUDE (only large/fixed furniture that cannot be moved)
+    const largeFurnitureToKeep = [
+      'couch', 'sofa', 'loveseat', 'sectional',
+      'bed', 'king bed', 'queen bed',
+      'dining table', 'table',
+      'toilet', 'bathtub', 'shower',
+      'tv', 'television',
+      'sink', 'oven', 'refrigerator', 'fridge', 'stove', 'dishwasher',
+      'microwave', 'washer', 'dryer',
+      'bookcase', 'bookshelf', 'cabinet', 'wardrobe', 'armoire',
+      'wall', 'door', 'window', 'ceiling', 'floor'
+    ];
+    
+    // Movable furniture that could obstruct space (considered for removal suggestions)
+    const movableFurniture = [
+      'chair', 'dining chair', 'office chair', 'desk chair', 'folding chair',
+      'stool', 'bar stool', 'ottoman', 'footstool', 'pouf',
+      'side table', 'end table', 'nightstand', 'accent table',
+      'bench', 'small table'
     ];
 
+    // Track movable furniture for styling tips
+    const detectedMovableFurniture = [];
+    
     // Categorize unidentified objects by room and position
     const categorizeClutter = (className, roomType, bbox) => {
       const name = className.toLowerCase();
       
-      // Check if it's furniture we should keep
-      if (furnitureToKeep.some(furniture => 
+      // Check if it's large furniture we should keep
+      if (largeFurnitureToKeep.some(furniture => 
         name.includes(furniture) || furniture.includes(name)
       )) {
+        return null;
+      }
+      
+      // Track movable furniture but don't add to clutter list (will go in styling tips)
+      if (movableFurniture.some(item => name.includes(item) || item.includes(name))) {
+        detectedMovableFurniture.push({ name: className, bbox });
         return null;
       }
       
@@ -476,36 +500,58 @@ function App() {
         ]
       });
     } else if (roomType === 'living room') {
+      const tips = [
+        'Hide remotes, cables, electronics',
+        'Limit throw pillows to 3-4',
+        'Clear coffee table except 1-2 items',
+        'Remove personal photos',
+        'Add fresh flowers or greenery',
+        'Use multiple light sources',
+        'Show flow and walking space'
+      ];
+      
+      // Add chair removal tip if detected
+      if (detectedMovableFurniture.length > 0) {
+        const chairs = detectedMovableFurniture.filter(f => 
+          f.name.toLowerCase().includes('chair') || f.name.toLowerCase().includes('stool')
+        );
+        if (chairs.length > 2) {
+          tips.push(`Consider removing ${chairs.length - 2} extra chair(s) to make room feel more spacious`);
+        } else if (chairs.length > 0) {
+          tips.push('Evaluate if extra chairs obstruct walking space - remove if needed');
+        }
+      }
+      
       generalRecommendations.push({
         name: 'Living Room Staging Tips',
         confidence: '100',
         location: 'Living room',
         type: 'styling',
-        tips: [
-          'Hide remotes, cables, electronics',
-          'Limit throw pillows to 3-4',
-          'Clear coffee table except 1-2 items',
-          'Remove personal photos',
-          'Add fresh flowers or greenery',
-          'Use multiple light sources',
-          'Show flow and walking space'
-        ]
+        tips
       });
     } else {
       // Generic tips for unidentified rooms
+      const tips = [
+        'Remove ALL personal items and clutter',
+        'Clear surfaces - less is more',
+        'Maximize natural and artificial light',
+        'Add minimal, neutral decor',
+        'Create sense of space and flow',
+        'Shoot from corners to show room size'
+      ];
+      
+      // Add furniture removal tip if detected
+      if (detectedMovableFurniture.length > 0) {
+        const furniture = detectedMovableFurniture.map(f => f.name.toLowerCase()).join(', ');
+        tips.push(`Consider removing movable furniture (${furniture}) if it makes the space feel crowded`);
+      }
+      
       generalRecommendations.push({
         name: 'General Staging Tips',
         confidence: '100',
         location: 'Any room',
         type: 'styling',
-        tips: [
-          'Remove ALL personal items and clutter',
-          'Clear surfaces - less is more',
-          'Maximize natural and artificial light',
-          'Add minimal, neutral decor',
-          'Create sense of space and flow',
-          'Shoot from corners to show room size'
-        ]
+        tips
       });
     }
     

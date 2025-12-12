@@ -166,10 +166,24 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               'flower', 'plant', 'flowers', 'bouquet'
             ];
 
-            // Only exclude major structural/fixed items from highlighting
-            const furnitureToKeep = [
-              'couch', 'sofa', 'bed', 'dining table', 'toilet', 'tv', 'sink', 'oven', 'refrigerator',
-              'microwave', 'wall', 'door', 'window', 'ceiling', 'floor'
+            // Only exclude large/fixed furniture from highlighting (can't be moved)
+            const largeFurnitureToKeep = [
+              'couch', 'sofa', 'loveseat', 'sectional',
+              'bed', 'king bed', 'queen bed',
+              'dining table', 'table',
+              'toilet', 'bathtub', 'shower',
+              'tv', 'television',
+              'sink', 'oven', 'refrigerator', 'fridge', 'stove', 'dishwasher',
+              'microwave', 'washer', 'dryer',
+              'bookcase', 'bookshelf', 'cabinet', 'wardrobe', 'armoire',
+              'wall', 'door', 'window', 'ceiling', 'floor'
+            ];
+            
+            // Movable furniture - don't highlight these either (handled in styling tips)
+            const movableFurniture = [
+              'chair', 'dining chair', 'office chair', 'desk chair',
+              'stool', 'bar stool', 'ottoman', 'footstool',
+              'side table', 'end table', 'nightstand', 'bench'
             ];
             
             // High priority items that should be very obvious
@@ -196,12 +210,15 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
               const score = prediction.score;
               const className = prediction.class.toLowerCase();
               
-              // Skip furniture; we never highlight fixed items
-              const isFurniture = furnitureToKeep.some(furniture => 
+              // Skip large furniture and movable furniture (can't move / handled in tips)
+              const isLargeFurniture = largeFurnitureToKeep.some(furniture => 
+                className.includes(furniture) || furniture.includes(className)
+              );
+              const isMovableFurniture = movableFurniture.some(furniture =>
                 className.includes(furniture) || furniture.includes(className)
               );
               
-              if (isFurniture || score < 0.12) {
+              if (isLargeFurniture || isMovableFurniture || score < 0.12) {
                 return;
               }
               
