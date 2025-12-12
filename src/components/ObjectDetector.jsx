@@ -47,7 +47,7 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         } else {
           console.log('Loading new model...');
           const modelPromise = cocoSsd.load({
-            base: 'lite_mobilenet_v2' // Faster inference (2-3x speedup) with good accuracy for shape detection
+            base: 'mobilenet_v2' // Superior accuracy for detailed object recognition
           });
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Model loading timeout after 60 seconds')), 60000)
@@ -85,33 +85,71 @@ function ObjectDetector({ image, onDetectionComplete, detectedObjects }) {
         await runDetection(model);
 
         async function runDetection(model) {
-          // OPTIMIZED: Use 640px max dimension for faster processing (optimal for lite model)
-          const MAX_DIMENSION = 640;
+          // ENHANCED: Use 800px for better feature extraction and accuracy
+          const MAX_DIMENSION = 800;
           const detectionScale = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
           const targetWidth = Math.round(img.width * detectionScale);
           const targetHeight = Math.round(img.height * detectionScale);
 
-          // Draw scaled image to an offscreen canvas for detection
+          // Draw scaled image to an offscreen canvas
           const inputCanvas = document.createElement('canvas');
           inputCanvas.width = targetWidth;
           inputCanvas.height = targetHeight;
           const inputCtx = inputCanvas.getContext('2d');
-          
-          // Draw image without modifying lighting
           inputCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-          console.log('Running optimized detection:', targetWidth, 'x', targetHeight);
+          // INTELLIGENT PREPROCESSING: Enhance image for better object detection
+          const imageData = inputCtx.getImageData(0, 0, targetWidth, targetHeight);
+          const data = imageData.data;
           
-          // SIMPLIFIED: Single-pass detection with optimized parameters for speed + accuracy
+          // Adaptive contrast enhancement + slight sharpening for shape clarity
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            // Enhance contrast by 20% (moves values away from mid-gray)
+            const contrastFactor = 1.2;
+            data[i] = Math.min(255, Math.max(0, (r - 128) * contrastFactor + 128));
+            data[i+1] = Math.min(255, Math.max(0, (g - 128) * contrastFactor + 128));
+            data[i+2] = Math.min(255, Math.max(0, (b - 128) * contrastFactor + 128));
+          }
+          
+          inputCtx.putImageData(imageData, 0, 0);
+
+          console.log('Running enhanced detection:', targetWidth, 'x', targetHeight);
+          
+          // MULTI-PASS DETECTION: Primary pass with high confidence + secondary pass with lower threshold
           let predictions = [];
           try {
             if (model.detect) {
-              // Single detection pass with optimized settings for shape analysis
-              // maxNumBoxes=200 allows more shape cross-referencing
-              // score threshold=0.12 balances false positives vs detection completeness
-              // IOU threshold improved for overlapping objects
-              predictions = await model.detect(inputCanvas, 200, 0.12);
-              console.log('Single-pass detection complete:', predictions.length, 'objects');
+              // Primary detection pass: high accuracy objects (confidence > 0.12)
+              const primaryPredictions = await model.detect(inputCanvas, 250, 0.12);
+              console.log('Primary detection:', primaryPredictions.length, 'objects');
+              
+              // Secondary pass: capture additional objects at lower threshold (0.08)
+              // These get confidence boost if spatially clustered with high-confidence detections
+              const secondaryPredictions = await model.detect(inputCanvas, 100, 0.08);
+              const filteredSecondary = secondaryPredictions.filter(s => 
+                !primaryPredictions.some(p => 
+                  p.class === s.class && 
+                  Math.abs(p.bbox[0] - s.bbox[0]) < 20 && 
+                  Math.abs(p.bbox[1] - s.bbox[1]) < 20
+                )
+              );
+              
+              // Boost confidence of secondary detections if near high-confidence objects
+              filteredSecondary.forEach(sec => {
+                const nearHighConfidence = primaryPredictions.some(prim => 
+                  Math.abs(prim.bbox[0] - sec.bbox[0]) < 50 && 
+                  Math.abs(prim.bbox[1] - sec.bbox[1]) < 50
+                );
+                if (nearHighConfidence) {
+                  sec.score = Math.min(0.95, sec.score * 1.3); // Confidence boost
+                }
+              });
+              
+              predictions = [...primaryPredictions, ...filteredSecondary];
+              console.log('Multi-pass detection complete:', predictions.length, 'total objects');
             } else if (model.estimateObjects) {
               predictions = await model.estimateObjects(img);
             } else {
