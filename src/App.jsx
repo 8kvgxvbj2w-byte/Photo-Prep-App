@@ -213,6 +213,21 @@ function App() {
         finalType = second.type;
       }
 
+      // New sanity rules: enforce key anchors for bedroom and office/study
+      const hasBed = classes.some(c => c.includes('bed'));
+      const hasDesk = classes.some(c => c.includes('desk'));
+      const hasRunnerUpStrong = strongCount(second.type) > 0;
+
+      // Bedroom must have an actual bed detected
+      if (best.type === 'bedroom' && !hasBed && hasRunnerUpStrong) {
+        finalType = second.type;
+      }
+
+      // Office/Study must have a desk detected
+      if (best.type === 'office' && !hasDesk && hasRunnerUpStrong) {
+        finalType = second.type;
+      }
+
       const isConfident = (scores[finalType] >= 6 && (scores[finalType] - second.score) >= 2) || scores[finalType] >= 8;
       if (isConfident) {
         return { type: finalType, confidence, allScores: scores, evidence };
